@@ -1,0 +1,40 @@
+name: yg_machining_calculator
+description: A new Flutter project.
+publish_to: 'none'
+
+version: 1.0.0+4
+
+environment:
+  sdk: ^3.0.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  url_launcher: ^6.2.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - Assets/logo_animated.gif
+    - Assets/abc.png
+    - Assets/turning.png
+    - Assets/milling.png
+    - Assets/drilling.png
+    - Assets/tapping.png
+    - Assets/material.png
+    - Assets/tolerance.png
+    - Assets/Icon/app_icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "Assets/Icon/app_icon.png"
+  min_sdk_android: 21
