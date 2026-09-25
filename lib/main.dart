@@ -1414,100 +1414,158 @@ class ThreadSize {
   double get tpi => 25.4 / pitchMm;
 }
 
+// American UNC — published tap drill sizes per the YG Cutting Tools
+// technical chart (previously computed from the D-pitch formula only).
 const List<ThreadSize> kUNC = [
-  ThreadSize('#1', 0.073 * 25.4, 25.4 / 64),
-  ThreadSize('#2', 0.086 * 25.4, 25.4 / 56),
-  ThreadSize('#3', 0.099 * 25.4, 25.4 / 48),
-  ThreadSize('#4', 0.112 * 25.4, 25.4 / 40),
-  ThreadSize('#5', 0.125 * 25.4, 25.4 / 40),
-  ThreadSize('#6', 0.138 * 25.4, 25.4 / 32),
-  ThreadSize('#8', 0.164 * 25.4, 25.4 / 32),
-  ThreadSize('#10', 0.190 * 25.4, 25.4 / 24),
-  ThreadSize('#12', 0.216 * 25.4, 25.4 / 24),
-  ThreadSize('1/4', 0.250 * 25.4, 25.4 / 20),
-  ThreadSize('5/16', 0.3125 * 25.4, 25.4 / 18),
-  ThreadSize('3/8', 0.375 * 25.4, 25.4 / 16),
-  ThreadSize('7/16', 0.4375 * 25.4, 25.4 / 14),
-  ThreadSize('1/2', 0.500 * 25.4, 25.4 / 13),
-  ThreadSize('9/16', 0.5625 * 25.4, 25.4 / 12),
-  ThreadSize('5/8', 0.625 * 25.4, 25.4 / 11),
-  ThreadSize('3/4', 0.750 * 25.4, 25.4 / 10),
-  ThreadSize('7/8', 0.875 * 25.4, 25.4 / 9),
-  ThreadSize('1', 1.000 * 25.4, 25.4 / 8),
-  ThreadSize('1-1/8', 1.125 * 25.4, 25.4 / 7),
-  ThreadSize('1-1/4', 1.250 * 25.4, 25.4 / 7),
-  ThreadSize('1-3/8', 1.375 * 25.4, 25.4 / 6),
-  ThreadSize('1-1/2', 1.500 * 25.4, 25.4 / 6),
-  ThreadSize('1-3/4', 1.750 * 25.4, 25.4 / 5),
-  ThreadSize('2', 2.000 * 25.4, 25.4 / 4.5),
+  ThreadSize('#1', 0.073 * 25.4, 25.4 / 64, 1.5),
+  ThreadSize('#2', 0.086 * 25.4, 25.4 / 56, 1.8),
+  ThreadSize('#3', 0.099 * 25.4, 25.4 / 48, 2.1),
+  ThreadSize('#4', 0.112 * 25.4, 25.4 / 40, 2.3),
+  ThreadSize('#5', 0.125 * 25.4, 25.4 / 40, 2.6),
+  ThreadSize('#6', 0.138 * 25.4, 25.4 / 32, 2.85),
+  ThreadSize('#8', 0.164 * 25.4, 25.4 / 32, 3.5),
+  ThreadSize('#10', 0.190 * 25.4, 25.4 / 24, 3.9),
+  ThreadSize('#12', 0.216 * 25.4, 25.4 / 24, 4.5),
+  ThreadSize('1/4', 0.250 * 25.4, 25.4 / 20, 5.2),
+  ThreadSize('5/16', 0.3125 * 25.4, 25.4 / 18, 6.6),
+  ThreadSize('3/8', 0.375 * 25.4, 25.4 / 16, 8),
+  ThreadSize('7/16', 0.4375 * 25.4, 25.4 / 14, 9.4),
+  ThreadSize('1/2', 0.500 * 25.4, 25.4 / 13, 10.75),
+  ThreadSize('9/16', 0.5625 * 25.4, 25.4 / 12, 12.25),
+  ThreadSize('5/8', 0.625 * 25.4, 25.4 / 11, 13.5),
+  ThreadSize('3/4', 0.750 * 25.4, 25.4 / 10, 16.5),
+  ThreadSize('7/8', 0.875 * 25.4, 25.4 / 9, 19.5),
+  ThreadSize('1', 1.000 * 25.4, 25.4 / 8, 22.25),
+  ThreadSize('1-1/8', 1.125 * 25.4, 25.4 / 7, 25),
+  ThreadSize('1-1/4', 1.250 * 25.4, 25.4 / 7, 28.25),
+  ThreadSize('1-3/8', 1.375 * 25.4, 25.4 / 6, 30.75),
+  ThreadSize('1-1/2', 1.500 * 25.4, 25.4 / 6, 34),
+  ThreadSize('1-3/4', 1.750 * 25.4, 25.4 / 5, 39.5),
+  ThreadSize('2', 2.000 * 25.4, 25.4 / 4.5, 45.25),
 ];
 
+// American UNF — published tap drill sizes per the YG Cutting Tools
+// technical chart (previously computed from the D-pitch formula only).
 const List<ThreadSize> kUNF = [
-  ThreadSize('#0', 0.060 * 25.4, 25.4 / 80),
-  ThreadSize('#1', 0.073 * 25.4, 25.4 / 72),
-  ThreadSize('#2', 0.086 * 25.4, 25.4 / 64),
-  ThreadSize('#3', 0.099 * 25.4, 25.4 / 56),
-  ThreadSize('#4', 0.112 * 25.4, 25.4 / 48),
-  ThreadSize('#5', 0.125 * 25.4, 25.4 / 44),
-  ThreadSize('#6', 0.138 * 25.4, 25.4 / 40),
-  ThreadSize('#8', 0.164 * 25.4, 25.4 / 36),
-  ThreadSize('#10', 0.190 * 25.4, 25.4 / 32),
-  ThreadSize('#12', 0.216 * 25.4, 25.4 / 28),
-  ThreadSize('1/4', 0.250 * 25.4, 25.4 / 28),
-  ThreadSize('5/16', 0.3125 * 25.4, 25.4 / 24),
-  ThreadSize('3/8', 0.375 * 25.4, 25.4 / 24),
-  ThreadSize('7/16', 0.4375 * 25.4, 25.4 / 20),
-  ThreadSize('1/2', 0.500 * 25.4, 25.4 / 20),
-  ThreadSize('9/16', 0.5625 * 25.4, 25.4 / 18),
-  ThreadSize('5/8', 0.625 * 25.4, 25.4 / 18),
-  ThreadSize('3/4', 0.750 * 25.4, 25.4 / 16),
-  ThreadSize('7/8', 0.875 * 25.4, 25.4 / 14),
-  ThreadSize('1', 1.000 * 25.4, 25.4 / 12),
-  ThreadSize('1-1/8', 1.125 * 25.4, 25.4 / 12),
-  ThreadSize('1-1/4', 1.250 * 25.4, 25.4 / 12),
-  ThreadSize('1-3/8', 1.375 * 25.4, 25.4 / 12),
-  ThreadSize('1-1/2', 1.500 * 25.4, 25.4 / 12),
+  ThreadSize('#0', 0.060 * 25.4, 25.4 / 80, 1.3),
+  ThreadSize('#1', 0.073 * 25.4, 25.4 / 72, 1.6),
+  ThreadSize('#2', 0.086 * 25.4, 25.4 / 64, 1.9),
+  ThreadSize('#3', 0.099 * 25.4, 25.4 / 56, 2.1),
+  ThreadSize('#4', 0.112 * 25.4, 25.4 / 48, 2.4),
+  ThreadSize('#5', 0.125 * 25.4, 25.4 / 44, 2.7),
+  ThreadSize('#6', 0.138 * 25.4, 25.4 / 40, 3),
+  ThreadSize('#8', 0.164 * 25.4, 25.4 / 36, 3.5),
+  ThreadSize('#10', 0.190 * 25.4, 25.4 / 32, 4.1),
+  ThreadSize('#12', 0.216 * 25.4, 25.4 / 28, 4.7),
+  ThreadSize('1/4', 0.250 * 25.4, 25.4 / 28, 5.5),
+  ThreadSize('5/16', 0.3125 * 25.4, 25.4 / 24, 6.9),
+  ThreadSize('3/8', 0.375 * 25.4, 25.4 / 24, 8.5),
+  ThreadSize('7/16', 0.4375 * 25.4, 25.4 / 20, 9.9),
+  ThreadSize('1/2', 0.500 * 25.4, 25.4 / 20, 11.5),
+  ThreadSize('9/16', 0.5625 * 25.4, 25.4 / 18, 12.9),
+  ThreadSize('5/8', 0.625 * 25.4, 25.4 / 18, 14.5),
+  ThreadSize('3/4', 0.750 * 25.4, 25.4 / 16, 17.5),
+  ThreadSize('7/8', 0.875 * 25.4, 25.4 / 14, 20.4),
+  ThreadSize('1', 1.000 * 25.4, 25.4 / 12, 23.25),
+  ThreadSize('1-1/8', 1.125 * 25.4, 25.4 / 12, 26.5),
+  ThreadSize('1-1/4', 1.250 * 25.4, 25.4 / 12, 29.5),
+  ThreadSize('1-3/8', 1.375 * 25.4, 25.4 / 12, 32.7),
+  ThreadSize('1-1/2', 1.500 * 25.4, 25.4 / 12, 36),
 ];
 
-// BSW (British Standard Whitworth) — full range with published tap
-// drill sizes, verified row-by-row against pitch = 25.4/TPI.
+// BSW (British Standard Whitworth) — full range, YG Cutting Tools
+// technical chart. Runs 3/32in to 3in (the chart's own range; it
+// doesn't cover 1/16in or beyond 3in, which the previous data here did).
 const List<ThreadSize> kBSW = [
-  ThreadSize('1/16', 1.587, 0.423, 1.15),
-  ThreadSize('3/32', 2.381, 0.529, 1.90),
-  ThreadSize('1/8', 3.175, 0.635, 2.50),
-  ThreadSize('5/32', 3.969, 0.793, 3.20),
-  ThreadSize('3/16', 4.762, 1.058, 3.70),
-  ThreadSize('7/32', 5.556, 1.058, 4.50),
-  ThreadSize('1/4', 6.350, 1.270, 5.10),
-  ThreadSize('5/16', 7.938, 1.411, 6.50),
-  ThreadSize('3/8', 9.525, 1.588, 7.90),
-  ThreadSize('7/16', 11.113, 1.814, 9.20),
-  ThreadSize('1/2', 12.700, 2.117, 10.40),
-  ThreadSize('9/16', 14.290, 2.117, 11.89),
-  ThreadSize('5/8', 15.876, 2.309, 13.40),
-  ThreadSize('3/4', 19.051, 2.540, 16.25),
-  ThreadSize('7/8', 22.226, 2.822, 19.25),
-  ThreadSize('1', 25.400, 3.175, 22.00),
-  ThreadSize('1-1/8', 28.576, 3.629, 24.50),
-  ThreadSize('1-1/4', 31.751, 3.629, 27.25),
-  ThreadSize('1-3/8', 34.926, 4.233, 30.25),
-  ThreadSize('1-1/2', 38.100, 4.233, 33.50),
-  ThreadSize('1-5/8', 41.277, 5.080, 35.50),
-  ThreadSize('1-3/4', 44.452, 5.080, 38.50),
-  ThreadSize('1-7/8', 47.627, 5.645, 41.25),
-  ThreadSize('2', 50.802, 5.645, 44.50),
-  ThreadSize('2-1/4', 57.152, 6.350, 50.00),
-  ThreadSize('2-1/2', 63.502, 6.350, 56.00),
-  ThreadSize('2-3/4', 69.853, 7.257, 61.50),
-  ThreadSize('3', 76.203, 7.257, 68.00),
-  ThreadSize('3-1/4', 82.553, 7.816, 73.75),
-  ThreadSize('3-1/2', 88.903, 7.816, 80.00),
-  ThreadSize('3-3/4', 95.254, 8.467, 85.50),
-  ThreadSize('4', 101.604, 8.467, 92.00),
+  ThreadSize('3/32', 2.3812, 25.4 / 48, 1.8),
+  ThreadSize('1/8', 3.175, 25.4 / 40, 2.5),
+  ThreadSize('5/32', 3.9688, 25.4 / 32, 3.1),
+  ThreadSize('3/16', 4.7625, 25.4 / 24, 3.6),
+  ThreadSize('7/32', 5.5562, 25.4 / 24, 4.4),
+  ThreadSize('1/4', 6.35, 25.4 / 20, 5.1),
+  ThreadSize('5/16', 7.9375, 25.4 / 18, 6.5),
+  ThreadSize('3/8', 9.525, 25.4 / 16, 7.9),
+  ThreadSize('7/16', 11.1125, 25.4 / 14, 9.3),
+  ThreadSize('1/2', 12.7, 25.4 / 12, 10.5),
+  ThreadSize('9/16', 14.2875, 25.4 / 12, 12),
+  ThreadSize('5/8', 15.875, 25.4 / 11, 13.5),
+  ThreadSize('3/4', 19.05, 25.4 / 10, 16.5),
+  ThreadSize('7/8', 22.225, 25.4 / 9, 19.25),
+  ThreadSize('1', 25.4, 25.4 / 8, 22),
+  ThreadSize('1-1/8', 28.575, 25.4 / 7, 24.75),
+  ThreadSize('1-1/4', 31.75, 25.4 / 7, 27.75),
+  ThreadSize('1-3/8', 34.925, 25.4 / 6, 30.5),
+  ThreadSize('1-1/2', 38.1, 25.4 / 6, 33.5),
+  ThreadSize('1-5/8', 41.275, 25.4 / 5, 35.5),
+  ThreadSize('1-3/4', 44.45, 25.4 / 5, 39),
+  ThreadSize('1-7/8', 47.625, 25.4 / 4.5, 41.5),
+  ThreadSize('2', 50.8, 25.4 / 4.5, 44.5),
+  ThreadSize('2-1/4', 57.15, 25.4 / 4, 50),
+  ThreadSize('2-1/2', 63.5, 25.4 / 4, 56.5),
+  ThreadSize('2-3/4', 69.85, 25.4 / 3.5, 62),
+  ThreadSize('3', 76.2, 25.4 / 3.5, 68.5),
+];
+
+// STI UNC — Screw Thread Insert taps (Unified Coarse), YG Cutting Tools
+// technical chart. Needs a larger tap drill than plain UNC for the same
+// nominal size, since the thread is cut into a helical wire insert
+// bushing rather than directly into the base material.
+const List<ThreadSize> kSTIUNC = [
+  ThreadSize('#2', 2.1844, 25.4 / 56, 2.3),
+  ThreadSize('#3', 2.5146, 25.4 / 48, 2.7),
+  ThreadSize('#4', 2.8448, 25.4 / 40, 3.1),
+  ThreadSize('#5', 3.175, 25.4 / 40, 3.4),
+  ThreadSize('#6', 3.5052, 25.4 / 32, 3.8),
+  ThreadSize('#8', 4.1656, 25.4 / 32, 4.4),
+  ThreadSize('#10', 4.826, 25.4 / 24, 5.2),
+  ThreadSize('#12', 5.4864, 25.4 / 24, 5.8),
+  ThreadSize('1/4', 6.35, 25.4 / 20, 6.81),
+  ThreadSize('5/16', 7.9375, 25.4 / 18, 8.4),
+  ThreadSize('3/8', 9.525, 25.4 / 16, 10),
+  ThreadSize('7/16', 11.1125, 25.4 / 14, 11.6),
+  ThreadSize('1/2', 12.7, 25.4 / 13, 13.3),
+  ThreadSize('9/16', 14.2875, 25.4 / 12, 14.9),
+  ThreadSize('5/8', 15.875, 25.4 / 11, 16.5),
+  ThreadSize('3/4', 19.05, 25.4 / 10, 19.75),
+  ThreadSize('7/8', 22.225, 25.4 / 9, 23),
+  ThreadSize('1', 25.4, 25.4 / 8, 26.25),
+  ThreadSize('1-1/8', 28.575, 25.4 / 7, 29.5),
+  ThreadSize('1-1/4', 31.75, 25.4 / 7, 32.75),
+  ThreadSize('1-3/8', 34.925, 25.4 / 6, 36),
+  ThreadSize('1-1/2', 38.1, 25.4 / 6, 39.25),
+];
+
+// STI UNF — Screw Thread Insert taps (Unified Fine), YG Cutting Tools
+// technical chart.
+const List<ThreadSize> kSTIUNF = [
+  ThreadSize('#2', 2.1844, 25.4 / 64, 2.3),
+  ThreadSize('#3', 2.5146, 25.4 / 56, 2.7),
+  ThreadSize('#4', 2.8448, 25.4 / 48, 3),
+  ThreadSize('#5', 3.175, 25.4 / 44, 3.35),
+  ThreadSize('#6', 3.5052, 25.4 / 40, 3.7),
+  ThreadSize('#8', 4.1656, 25.4 / 36, 4.4),
+  ThreadSize('#10', 4.826, 25.4 / 32, 5.1),
+  ThreadSize('#12', 5.4864, 25.4 / 28, 5.7),
+  ThreadSize('1/4', 6.35, 25.4 / 28, 6.6),
+  ThreadSize('5/16', 7.9375, 25.4 / 24, 8.25),
+  ThreadSize('3/8', 9.525, 25.4 / 24, 9.8),
+  ThreadSize('7/16', 11.1125, 25.4 / 20, 11.5),
+  ThreadSize('1/2', 12.7, 25.4 / 20, 13.1),
+  ThreadSize('9/16', 14.2875, 25.4 / 18, 14.7),
+  ThreadSize('5/8', 15.875, 25.4 / 18, 16.25),
+  ThreadSize('3/4', 19.05, 25.4 / 16, 19.5),
+  ThreadSize('7/8', 22.225, 25.4 / 14, 22.75),
+  ThreadSize('1', 25.4, 25.4 / 12, 26),
+  ThreadSize('1-1/8', 28.575, 25.4 / 12, 29.15),
+  ThreadSize('1-1/4', 31.75, 25.4 / 12, 32.35),
+  ThreadSize('1-3/8', 34.925, 25.4 / 12, 35.5),
+  ThreadSize('1-1/2', 38.1, 25.4 / 12, 38.75),
 ];
 
 // BSF (British Standard Fine) — full range through 2-3/4in (the
 // chart marks tap drill "n/a" beyond that, so those aren't included).
+// Not covered by the YG Cutting Tools technical chart (kept from an
+// earlier, separately verified source rather than removed).
 const List<ThreadSize> kBSF = [
   ThreadSize('3/16', 4.763, 0.794, 4.00),
   ThreadSize('7/32', 5.556, 0.907, 4.60),
@@ -1536,36 +1594,249 @@ const List<ThreadSize> kBSF = [
   ThreadSize('2-3/4', 69.850, 4.234, 64.30),
 ];
 
-// BSP (parallel pipe / G-thread), DIN ISO 228 — starts at G1/8
-// per the reference chart (no G1/16 listed in that standard).
+// BSP (parallel pipe / G-thread), YG Cutting Tools technical chart.
+// Major diameters per ISO 228-1 (not the fraction-of-an-inch rule that
+// applies to BSW/UNC — a pipe thread's nominal size names the bore it
+// fits, not its own diameter). G1-5/8" and G2-3/8" aren't standard
+// ISO 228 sizes but do appear in this chart; their major diameters are
+// derived from the chart's own core-diameter column plus the ~2.316mm
+// major-minus-core offset measured from this chart's other 11-TPI
+// sizes (consistent to +/-0.003mm across all of them).
 const List<ThreadSize> kBSP = [
-  ThreadSize('1/8', 9.73, 0.907, 8.80),
-  ThreadSize('1/4', 13.16, 1.337, 11.80),
-  ThreadSize('3/8', 16.66, 1.337, 15.25),
-  ThreadSize('1/2', 20.95, 1.814, 19.00),
-  ThreadSize('5/8', 22.91, 1.814, 21.00),
-  ThreadSize('3/4', 26.44, 1.814, 24.50),
-  ThreadSize('7/8', 30.20, 1.814, 28.25),
-  ThreadSize('1', 33.25, 2.309, 30.75),
-  ThreadSize('1-1/8', 37.90, 2.309, 35.30),
-  ThreadSize('1-1/4', 41.91, 2.309, 39.25),
-  ThreadSize('1-3/8', 44.32, 2.309, 41.70),
-  ThreadSize('1-1/2', 47.80, 2.309, 45.25),
-  ThreadSize('1-3/4', 53.74, 2.309, 51.10),
-  ThreadSize('2', 59.61, 2.309, 57.00),
-  ThreadSize('2-1/4', 65.71, 2.309, 63.10),
-  ThreadSize('2-1/2', 75.18, 2.309, 72.60),
-  ThreadSize('2-3/4', 81.53, 2.309, 78.90),
-  ThreadSize('3', 87.88, 2.309, 85.30),
-  ThreadSize('3-1/4', 93.98, 2.309, 91.50),
-  ThreadSize('3-1/2', 100.33, 2.309, 97.70),
-  ThreadSize('3-3/4', 106.68, 2.309, 104.00),
-  ThreadSize('4', 113.03, 2.309, 110.40),
+  ThreadSize('1/8', 9.728, 25.4 / 28, 8.8),
+  ThreadSize('1/4', 13.157, 25.4 / 19, 11.8),
+  ThreadSize('3/8', 16.662, 25.4 / 19, 15.25),
+  ThreadSize('1/2', 20.955, 25.4 / 14, 19),
+  ThreadSize('5/8', 22.911, 25.4 / 14, 21),
+  ThreadSize('3/4', 26.441, 25.4 / 14, 24.5),
+  ThreadSize('7/8', 30.201, 25.4 / 14, 28.25),
+  ThreadSize('1', 33.249, 25.4 / 11, 30.75),
+  ThreadSize('1-1/8', 37.897, 25.4 / 11, 35.5),
+  ThreadSize('1-1/4', 41.91, 25.4 / 11, 39.5),
+  ThreadSize('1-3/8', 44.323, 25.4 / 11, 42),
+  ThreadSize('1-1/2', 47.803, 25.4 / 11, 45.2),
+  ThreadSize('1-5/8', 51.986, 25.4 / 11, 49.6),
+  ThreadSize('1-3/4', 53.746, 25.4 / 11, 51.4),
+  ThreadSize('2', 59.614, 25.4 / 11, 57.2),
+  ThreadSize('2-1/4', 65.71, 25.4 / 11, 63.3),
+  ThreadSize('2-3/8', 69.396, 25.4 / 11, 67),
+  ThreadSize('2-1/2', 75.184, 25.4 / 11, 72.8),
+  ThreadSize('2-3/4', 81.534, 25.4 / 11, 79.1),
+  ThreadSize('3', 87.884, 25.4 / 11, 85.5),
+  ThreadSize('3-1/4', 93.98, 25.4 / 11, 91.5),
+  ThreadSize('3-1/2', 100.33, 25.4 / 11, 98),
+  ThreadSize('3-3/4', 106.68, 25.4 / 11, 104),
+  ThreadSize('4', 113.03, 25.4 / 11, 110.5),
+];
+
+// BSPT (Whitworth taper pipe thread, 1:16 taper) — YG Cutting Tools
+// technical chart. Diameter matches the corresponding BSP (G) parallel
+// size (ISO 7-1 uses the same major diameters as ISO 228-1 for the same
+// nominal size); R1/16 has no G-series equivalent, so it uses its own
+// verified major diameter (7.723mm). Drill size uses the chart's
+// "without reamer" figure (the more common shop practice without a
+// separate reaming pass) — the chart's "with reamer" figures are listed
+// alongside for reference: 1/16"=6.1, 1/8"=8.1, 1/4"=10.7, 3/8"=14.2,
+// 1/2"=17.6, 3/4"=23, 1"=29, 1-1/4"=37.5, 1-1/2"=43.5, 2"=54.9 (mm).
+const List<ThreadSize> kBSPT = [
+  ThreadSize('1/16', 7.723, 25.4 / 28, 6.2),
+  ThreadSize('1/8', 9.728, 25.4 / 28, 8.2),
+  ThreadSize('1/4', 13.157, 25.4 / 19, 11),
+  ThreadSize('3/8', 16.662, 25.4 / 19, 14.5),
+  ThreadSize('1/2', 20.955, 25.4 / 14, 18),
+  ThreadSize('3/4', 26.441, 25.4 / 14, 23.5),
+  ThreadSize('1', 33.249, 25.4 / 11, 29.5),
+  ThreadSize('1-1/4', 41.91, 25.4 / 11, 38),
+  ThreadSize('1-1/2', 47.803, 25.4 / 11, 44),
+  ThreadSize('2', 59.614, 25.4 / 11, 55.5),
+];
+
+// STI — ISO metric coarse Screw Thread Insert taps, YG Cutting Tools
+// technical chart. Kept separate from kMetricCoarse/kMetricFine/
+// kMetricThreadSizes (not merged into the automatic lookup) since the
+// same nominal size+pitch needs a distinctly larger drill for an
+// insert than for a plain tapped hole.
+const List<ThreadSize> kSTIMetricCoarse = [
+  ThreadSize('M2', 2, 0.4, 2.1),
+  ThreadSize('M2.5', 2.5, 0.45, 2.65),
+  ThreadSize('M3', 3, 0.5, 3.15),
+  ThreadSize('M3.5', 3.5, 0.6, 3.7),
+  ThreadSize('M4', 4, 0.7, 4.2),
+  ThreadSize('M4.5', 4.5, 0.75, 4.75),
+  ThreadSize('M5', 5, 0.8, 5.25),
+  ThreadSize('M6', 6, 1, 6.3),
+  ThreadSize('M7', 7, 1, 7.3),
+  ThreadSize('M8', 8, 1.25, 8.4),
+  ThreadSize('M10', 10, 1.5, 10.5),
+  ThreadSize('M12', 12, 1.75, 12.5),
+  ThreadSize('M14', 14, 2, 14.5),
+  ThreadSize('M16', 16, 2, 16.5),
+  ThreadSize('M18', 18, 2.5, 18.75),
+  ThreadSize('M20', 20, 2.5, 20.75),
+  ThreadSize('M22', 22, 2.5, 22.75),
+  ThreadSize('M24', 24, 3, 24.75),
+  ThreadSize('M27', 27, 3, 27.75),
+  ThreadSize('M30', 30, 3.5, 31),
+];
+
+// Metric — ISO coarse-pitch threads, YG Cutting Tools technical chart.
+// Used both as a selectable standard (imperial-style picker, when
+// added) and for the automatic drill-size lookup in metric Tapping —
+// see kMetricThreadSizes below.
+const List<ThreadSize> kMetricCoarse = [
+  ThreadSize('M1', 1, 0.25, 0.75),
+  ThreadSize('M1.1', 1.1, 0.25, 0.85),
+  ThreadSize('M1.2', 1.2, 0.25, 0.95),
+  ThreadSize('M1.4', 1.4, 0.3, 1.1),
+  ThreadSize('M1.6', 1.6, 0.35, 1.25),
+  ThreadSize('M1.7', 1.7, 0.35, 1.3),
+  ThreadSize('M1.8', 1.8, 0.35, 1.45),
+  ThreadSize('M2', 2, 0.4, 1.6),
+  ThreadSize('M2.2', 2.2, 0.45, 1.75),
+  ThreadSize('M2.3', 2.3, 0.4, 1.9),
+  ThreadSize('M2.5', 2.5, 0.45, 2.05),
+  ThreadSize('M2.6', 2.6, 0.45, 2.1),
+  ThreadSize('M3', 3, 0.5, 2.5),
+  ThreadSize('M3.5', 3.5, 0.6, 2.9),
+  ThreadSize('M4', 4, 0.7, 3.3),
+  ThreadSize('M4.5', 4.5, 0.75, 3.7),
+  ThreadSize('M5', 5, 0.8, 4.2),
+  ThreadSize('M6', 6, 1, 5),
+  ThreadSize('M7', 7, 1, 6),
+  ThreadSize('M8', 8, 1.25, 6.8),
+  ThreadSize('M9', 9, 1.25, 7.8),
+  ThreadSize('M10', 10, 1.5, 8.5),
+  ThreadSize('M11', 11, 1.5, 9.5),
+  ThreadSize('M12', 12, 1.75, 10.2),
+  ThreadSize('M14', 14, 2, 12),
+  ThreadSize('M16', 16, 2, 14),
+  ThreadSize('M18', 18, 2.5, 15.5),
+  ThreadSize('M20', 20, 2.5, 17.5),
+  ThreadSize('M22', 22, 2.5, 19.5),
+  ThreadSize('M24', 24, 3, 21),
+  ThreadSize('M27', 27, 3, 24),
+  ThreadSize('M30', 30, 3.5, 26.5),
+  ThreadSize('M33', 33, 3.5, 29.5),
+  ThreadSize('M36', 36, 4, 32),
+  ThreadSize('M39', 39, 4, 35),
+  ThreadSize('M42', 42, 4.5, 37.5),
+  ThreadSize('M45', 45, 4.5, 40.5),
+  ThreadSize('M48', 48, 5, 43),
+  ThreadSize('M52', 52, 5, 47),
+  ThreadSize('M56', 56, 5.5, 50.5),
+  ThreadSize('M60', 60, 5.5, 54.5),
+  ThreadSize('M64', 64, 6, 58),
+  ThreadSize('M68', 68, 6, 62),
+];
+
+// Metric — ISO fine-pitch threads, YG Cutting Tools technical chart.
+// Several sizes appear more than once (one row per available pitch) —
+// the label includes the pitch to keep them unique in a picker.
+const List<ThreadSize> kMetricFine = [
+  ThreadSize('M2.2', 2.2, 0.35, 2.15),
+  ThreadSize('M3', 3, 0.35, 2.65),
+  ThreadSize('M3.5', 3.5, 0.35, 3.15),
+  ThreadSize('M4', 4, 0.5, 3.5),
+  ThreadSize('M4.5', 4.5, 0.5, 4),
+  ThreadSize('M5', 5, 0.5, 4.5),
+  ThreadSize('M5.5', 5.5, 0.5, 5),
+  ThreadSize('M6', 6, 0.75, 5.2),
+  ThreadSize('M7', 7, 0.75, 6.2),
+  ThreadSize('M8x0.75', 8, 0.75, 7.2),
+  ThreadSize('M8x1', 8, 1, 7),
+  ThreadSize('M9x0.75', 9, 0.75, 8.2),
+  ThreadSize('M9x1', 9, 1, 8),
+  ThreadSize('M10x0.75', 10, 0.75, 9.2),
+  ThreadSize('M10x1', 10, 1, 9),
+  ThreadSize('M10x1.25', 10, 1.25, 8.8),
+  ThreadSize('M11x0.75', 11, 0.75, 10.2),
+  ThreadSize('M11x1', 11, 1, 10),
+  ThreadSize('M12x1', 12, 1, 11),
+  ThreadSize('M12x1.25', 12, 1.25, 10.8),
+  ThreadSize('M12x1.5', 12, 1.5, 10.5),
+  ThreadSize('M14x1', 14, 1, 13),
+  ThreadSize('M14x1.25', 14, 1.25, 12.8),
+  ThreadSize('M14x1.5', 14, 1.5, 12.5),
+  ThreadSize('M15x1', 15, 1, 14),
+  ThreadSize('M15x1.5', 15, 1.5, 13.5),
+  ThreadSize('M16x1', 16, 1, 15),
+  ThreadSize('M16x1.5', 16, 1.5, 14.5),
+  ThreadSize('M17x1', 17, 1, 16),
+  ThreadSize('M17x1.5', 17, 1.5, 15.5),
+  ThreadSize('M18x1', 18, 1, 17),
+  ThreadSize('M18x1.5', 18, 1.5, 16.5),
+  ThreadSize('M18x2', 18, 2, 16),
+  ThreadSize('M20x1', 20, 1, 19),
+  ThreadSize('M20x1.5', 20, 1.5, 18.5),
+  ThreadSize('M20x2', 20, 2, 18),
+  ThreadSize('M22x1', 22, 1, 21),
+  ThreadSize('M22x1.5', 22, 1.5, 20.5),
+  ThreadSize('M22x2', 22, 2, 20),
+  ThreadSize('M24x1', 24, 1, 23),
+  ThreadSize('M24x1.5', 24, 1.5, 22.5),
+  ThreadSize('M24x2', 24, 2, 22),
+  ThreadSize('M25', 25, 2, 23),
+  ThreadSize('M26', 26, 2.5, 24.5),
+  ThreadSize('M27x1', 27, 1, 26),
+  ThreadSize('M27x1.5', 27, 1.5, 25.5),
+  ThreadSize('M27x2', 27, 2, 25),
+  ThreadSize('M28x1', 28, 1, 27),
+  ThreadSize('M28x1.5', 28, 1.5, 26.5),
+  ThreadSize('M28x2', 28, 2, 26),
+  ThreadSize('M30x1', 30, 1, 29),
+  ThreadSize('M30x1.5', 30, 1.5, 28.5),
+  ThreadSize('M30x2', 30, 2, 28),
+  ThreadSize('M30x3', 30, 3, 27),
+  ThreadSize('M32x1.5', 32, 1.5, 30.5),
+  ThreadSize('M32x2', 32, 2, 30),
+  ThreadSize('M33x1.5', 33, 1.5, 31.5),
+  ThreadSize('M33x2', 33, 2, 31),
+  ThreadSize('M33x3', 33, 3, 30),
+  ThreadSize('M35', 35, 1.5, 33.5),
+  ThreadSize('M36x1.5', 36, 1.5, 34.5),
+  ThreadSize('M36x2', 36, 2, 34),
+  ThreadSize('M36x3', 36, 3, 33),
+  ThreadSize('M38', 38, 1.5, 36.5),
+  ThreadSize('M39x1.5', 39, 1.5, 37.5),
+  ThreadSize('M39x2', 39, 2, 37),
+  ThreadSize('M39x3', 39, 3, 36),
+  ThreadSize('M40x1.5', 40, 1.5, 38.5),
+  ThreadSize('M40x2', 40, 2, 38),
+  ThreadSize('M40x3', 40, 3, 37),
+  ThreadSize('M42x1.5', 42, 1.5, 40.5),
+  ThreadSize('M42x2', 42, 2, 40),
+  ThreadSize('M42x3', 42, 3, 39),
+  ThreadSize('M45x1.5', 45, 1.5, 43.5),
+  ThreadSize('M45x2', 45, 2, 43),
+  ThreadSize('M45x3', 45, 3, 42),
+  ThreadSize('M48x1.5', 48, 1.5, 46.5),
+  ThreadSize('M48x2', 48, 2, 46),
+  ThreadSize('M48x3', 48, 3, 45),
+  ThreadSize('M50x1.5', 50, 1.5, 48.5),
+  ThreadSize('M50x2', 50, 2, 48),
+  ThreadSize('M50x3', 50, 3, 47),
+  ThreadSize('M52x1.5', 52, 1.5, 50.5),
+  ThreadSize('M52x2', 52, 2, 50),
+  ThreadSize('M52x3', 52, 3, 49),
+];
+
+// Combined Metric Coarse + Fine, for the automatic drill-size lookup in
+// metric Tapping: whatever Diameter+Pitch the user types, if it matches
+// a row here (within a small tolerance) the chart's own drill size is
+// used instead of the D-pitch formula. STI Metric Coarse is
+// deliberately excluded — it shares nominal sizes/pitches with the
+// plain charts but needs a different (larger) drill, so merging it in
+// would silently pick the wrong one.
+const List<ThreadSize> kMetricThreadSizes = [
+  ...kMetricCoarse,
+  ...kMetricFine,
 ];
 
 // NPT (ANSI B1.20.1) — full range with published tap drill sizes.
 // Still tapered, so this reflects the chart's own values rather
-// than a computed approximation.
+// than a computed approximation. Not covered by the YG Cutting Tools
+// technical chart (kept from an earlier, separately verified source
+// rather than removed) — BSPT above is that chart's taper-pipe entry.
 const List<ThreadSize> kNPT = [
   ThreadSize('1/16', 7.895, 0.941, 6.00),
   ThreadSize('1/8', 10.242, 0.941, 8.25),
@@ -1592,8 +1863,11 @@ const Map<String, List<ThreadSize>> kThreadStandards = {
   'BSW': kBSW,
   'BSF': kBSF,
   'BSP': kBSP,
+  'BSPT': kBSPT,
   'UNC': kUNC,
   'UNF': kUNF,
+  'STI UNC': kSTIUNC,
+  'STI UNF': kSTIUNF,
   'NPT': kNPT,
 };
 
@@ -1601,9 +1875,12 @@ const List<String> kImperialThreadStandardNames = [
   'BSW',
   'BSF',
   'BSP',
+  'BSPT',
   'UNC',
   'UNF',
-  'NPT'
+  'STI UNC',
+  'STI UNF',
+  'NPT',
 ];
 
 enum Operation { turning, milling, drilling, tapping }
@@ -2425,14 +2702,29 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
   String _threadStandard = 'BSW';
   ThreadSize? _selectedThreadSize;
 
-  // Tapping only: Cut taps remove material (~75% thread engagement,
-  // the D-P rule already used). Form/roll taps displace material
-  // upward into the crest instead of cutting it, so they need a
-  // noticeably larger pre-drill hole for the same nominal size —
-  // conventionally sized to a looser ~65% engagement.
+  // Tapping only: Cut taps remove material (drill = D - pitch, ~75%
+  // thread engagement). Form/roll taps displace material upward into
+  // the crest instead of cutting it, so they use their own rule:
+  // drill = D - (pitch / 2). Metric only — see the Tapping field grid.
   bool _isFormTap = false;
   static const double kCutTapFactor = 1.0;
-  static const double kFormTapFactor = 0.65;
+  static const double kFormTapFactor = 0.5;
+
+  // Tapping only: chamfer (lead) form, for the torque/power chip-
+  // thickness formula. Chamfer length l4 = c x pitch, where c is the
+  // number of chamfered threads — a standard tap-catalog figure that
+  // varies by chamfer form, not something worth typing in by hand.
+  // Forms A-E and their thread-count bands per DIN 2175 (forming/roll
+  // taps) / DIN 2197 (cutting taps); each entry below uses the
+  // midpoint of its published range.
+  String _tapChamferForm = 'C';
+  static const Map<String, double> kTapChamferFactors = {
+    'A': 5.5, // 5-6 threads — through hole
+    'B': 4.5, // 4-5 threads — through hole
+    'C': 2.5, // 2-3 threads — blind & through hole (most common/general)
+    'D': 4.5, // 4-5 threads — through hole
+    'E': 1.75, // 1.5-2 threads — blind hole
+  };
 
   // Whichever of Vc / RPM the user typed into most recently is the
   // "driving" value; the other field is kept in sync automatically.
@@ -2585,6 +2877,20 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     } finally {
       _recalculating = false;
     }
+  }
+
+  // Metric Tapping only: if the typed Diameter+Pitch matches a row in
+  // kMetricThreadSizes (within a small tolerance, to allow for rounding
+  // in what's typed), returns that chart's published drill size —
+  // otherwise null, so the caller falls back to the D-pitch formula.
+  double? _lookupMetricPublishedDrill(double diameterMm, double pitchMm) {
+    for (final size in kMetricThreadSizes) {
+      if ((size.diameterMm - diameterMm).abs() < 0.01 &&
+          (size.pitchMm - pitchMm).abs() < 0.005) {
+        return size.publishedDrillMm;
+      }
+    }
+    return null;
   }
 
   void _recalculateImpl() {
@@ -2752,25 +3058,33 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         case Operation.tapping:
           final vf = f * n;
           _feedRate = vf;
+          // Feed rate isn't a free input for tapping (pitch is fixed by
+          // the thread), so it's shown as a computed/read-only field —
+          // kept in sync here the same way Vc/RPM sync themselves.
+          if (vf.isFinite) _setSilently(_feedRateCtrl, vf.toStringAsFixed(2));
           // Cycle time = tap-in + retract. A rigid tap has to reverse the
           // spindle and back out of the hole at the same feed rate it went
           // in at, so the honest cycle time is double the forward-only
           // pass, not just the time to reach depth.
           _time = (L != null && L > 0) ? (2 * L / vf) : null;
           // If a standard size with a verified published drill size is
-          // selected and this is a Cut Tap, use that chart value directly
-          // — it's more accurate than the D-pitch approximation, especially
-          // for tapered threads like NPT. Form taps always use the formula,
-          // since these charts are for cut taps.
-          final published = (!_isFormTap && _units == Units.imperial)
-              ? _selectedThreadSize?.publishedDrillMm
-              : null;
+          // selected (imperial) — or the typed Diameter+Pitch matches one
+          // (metric) — and this is a Cut Tap, use that chart value
+          // directly — it's more accurate than the D-pitch approximation,
+          // especially for tapered threads like NPT/BSPT. Form taps
+          // always use the formula, since these charts are for cut taps.
+          final published = _isFormTap
+              ? null
+              : _units == Units.imperial
+                  ? _selectedThreadSize?.publishedDrillMm
+                  : _lookupMetricPublishedDrill(D, f);
           if (published != null) {
             _drillSize = published;
           } else {
             // Cut tap: drill = D - (1.0 x pitch), roughly 75% thread
             // engagement — the widely used rule of thumb. Form/roll
-            // tap: drill = D - (0.65 x pitch), a larger hole since
+            // tap (metric only): drill = D - (0.5 x pitch), i.e.
+            // Nominal Diameter - (Pitch / 2) — a larger hole since
             // material is displaced upward rather than cut away.
             // Always reported in mm, regardless of the unit toggle.
             final factor = _isFormTap ? kFormTapFactor : kCutTapFactor;
@@ -2802,13 +3116,14 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       // Uses the Kienzle specific-cutting-force model: kc =
       // kc1.1 / h^mc. Chip thickness h and chip area A depend on
       // the operation's geometry, so each gets its own (standard,
-      // simplified) approximation. Not offered for tapping, since
-      // a tap's cutting mechanics don't fit this chip-thickness
-      // model. All internal geometry is normalized to millimetres
-      // regardless of the Metric/Imperial toggle, since kc1.1 is
-      // inherently defined in N/mm^2; results are reported in N,
-      // Nm and kW regardless of the unit toggle.
-      if (_material != null && _operation != Operation.tapping) {
+      // simplified) approximation. Tapping uses the standard tap
+      // chip-thickness formula (needs No. of Flutes and Chamfer
+      // Length filled in) rather than a discrete depth-of-cut. All
+      // internal geometry is normalized to millimetres regardless of the
+      // Metric/Imperial toggle, since kc1.1 is inherently defined
+      // in N/mm^2; results are reported in N, Nm and kW regardless
+      // of the unit toggle.
+      if (_material != null) {
         double mm(double v) => _units == Units.metric ? v : v * 25.4;
         double mPerMin(double v) => _units == Units.metric ? v : v * 0.3048;
 
@@ -2854,6 +3169,25 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
             }
             break;
           case Operation.tapping:
+            // Nominal chip thickness per flute along the tap's chamfer
+            // (lead) section: ae = P^2 x 0.5 / (z x l4), where P is
+            // pitch, z is the number of flutes, and l4 is the chamfer
+            // length — the standard formula for cutting-tap chip load.
+            // l4 = c x P, where c (number of chamfered threads) comes
+            // from the selected chamfer form (A-E, DIN 2175/2197)
+            // rather than being typed in — see kTapChamferFactors.
+            // The corresponding total chip cross-section, summed over
+            // all engaged flutes, is P^2 x 0.5 (the z cancels out,
+            // since more flutes each take a thinner, not smaller-area,
+            // bite). Needs No. of Flutes filled in; leave it blank to
+            // skip this and keep the other tapping results.
+            if (z != null && z > 0) {
+              final c = kTapChamferFactors[_tapChamferForm] ?? 2.5;
+              final l4mm = c * fmm;
+              h = (fmm * fmm * 0.5) / (z * l4mm);
+              A = fmm * fmm * 0.5;
+              qMetric = vcMmin * A;
+            }
             break;
         }
 
@@ -3226,43 +3560,41 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           children: [
             _sectionLabel('UNITS'),
             _unitsSlider(),
-            if (_operation != Operation.tapping) ...[
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _sectionLabel('MATERIAL (OPTIONAL)'),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const MaterialReferenceScreen()),
-                        );
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'View data reference',
-                            style: TextStyle(
-                              color: _accent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              decoration: TextDecoration.underline,
-                            ),
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _sectionLabel('MATERIAL (OPTIONAL)'),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const MaterialReferenceScreen()),
+                      );
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'View data reference',
+                          style: TextStyle(
+                            color: _accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
                           ),
-                          Icon(Icons.arrow_forward, size: 12, color: _accent),
-                        ],
-                      ),
+                        ),
+                        Icon(Icons.arrow_forward, size: 12, color: _accent),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              _materialPicker(),
-            ],
+                ),
+              ],
+            ),
+            _materialPicker(),
             const SizedBox(height: 14),
             if (_operation == Operation.drilling ||
                 _operation == Operation.milling)
@@ -3385,7 +3717,14 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   Expanded(
                     child: InkWell(
                       onTap: () {
-                        setState(() => _units = Units.imperial);
+                        setState(() {
+                          _units = Units.imperial;
+                          // Form (Roll) Tap is metric-only (see the
+                          // Tapping field grid) — reset back to Cut Tap
+                          // so an imperial size never gets left showing
+                          // a roll-tap result it can't offer data for.
+                          _isFormTap = false;
+                        });
                         _recalculate();
                       },
                       child: Center(
@@ -3902,8 +4241,14 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         ]);
       case Operation.tapping:
         return Column(children: [
-          _tapTypeRow(),
-          const SizedBox(height: 12),
+          // Form (Roll) Tap is metric-only — the published imperial
+          // drill-size charts (BSW/BSP/BSPT/UNC/UNF/STI/NPT) are all
+          // Cut Tap figures, so there's no verified roll-tap data to
+          // offer for imperial sizes.
+          if (_units == Units.metric) ...[
+            _tapTypeRow(),
+            const SizedBox(height: 12),
+          ],
           if (_units == Units.metric) ...[
             _fieldGrid([
               _field(_diameterCtrl, 'Diameter', uDiameter, symbol: 'D'),
@@ -3916,8 +4261,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   symbol: 'n',
                   computed: !_rpmIsDriving,
                   focusNode: _rpmFocusNode),
+              _field(_feedRateCtrl, 'Feed rate', uFeedRate,
+                  symbol: 'Vf', computed: true),
               _field(_lengthCtrl, 'Depth (opt)', uLength),
               _field(_holesCtrl, 'No. of Holes', 'holes', symbol: 'Qty'),
+              _field(_teethCtrl, 'No. of Flutes (opt)', 'flutes', symbol: 'z'),
             ]),
           ] else ...[
             _threadStandardRow(),
@@ -3933,21 +4281,13 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   symbol: 'n',
                   computed: !_rpmIsDriving,
                   focusNode: _rpmFocusNode),
+              _field(_feedRateCtrl, 'Feed rate', uFeedRate,
+                  symbol: 'Vf', computed: true),
               _field(_lengthCtrl, 'Depth (opt)', uLength),
               _field(_holesCtrl, 'No. of Holes', 'holes', symbol: 'Qty'),
+              _field(_teethCtrl, 'No. of Flutes (opt)', 'flutes', symbol: 'z'),
             ]),
           ],
-          if (_isFormTap)
-            const Padding(
-              padding: EdgeInsets.only(top: 4, bottom: 4),
-              child: Text(
-                'Form/roll tap drill sizes vary more by tap manufacturer than '
-                'cut tap sizes do — this uses a commonly recommended ~65% '
-                'engagement. Check your tap maker\'s chart for critical work.',
-                style:
-                    TextStyle(color: _C.textMuted, fontSize: 11, height: 1.3),
-              ),
-            ),
           if (_units == Units.imperial && _threadStandard == 'NPT')
             const Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
@@ -3969,6 +4309,38 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           ),
         ]);
     }
+  }
+
+  Widget _chamferFormRow() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: kTapChamferFactors.keys.map((form) {
+        final selected = _tapChamferForm == form;
+        return InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            setState(() => _tapChamferForm = form);
+            _recalculate();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: selected ? _C.brand : _C.cardAlt,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              form,
+              style: TextStyle(
+                color: selected ? Colors.white : _C.textDark,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   Widget _tapTypeRow() {
