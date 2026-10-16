@@ -10,7 +10,7 @@ import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ============================================================
-// ENTRY POINT
+// ENTRY POIN
 // ============================================================
 void main() {
   runApp(const MachiningApp());
