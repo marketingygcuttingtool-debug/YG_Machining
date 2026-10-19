@@ -1,27 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// ============================================================
-// ENTRY POIN
-// ============================================================
-void main() {
-  runApp(const MachiningApp());
-}
+void main() => runApp(const MachiningApp());
 
-// ------------------------------------------------------------
-// DESIGN TOKENS
-// Brand red pulled from the YG logo. Icon artwork is already
-// colored, so cards just need a neutral backdrop for it to
-// sit on.
-// ------------------------------------------------------------
 class _C {
   static const bg = Color(0xFFF6F1FA);
   static const card = Color(0xFFFFFFFF);
@@ -30,12 +20,10 @@ class _C {
   static const textMuted = Color(0xFF7A7686);
   static const border = Color(0xFFE6E1EE);
   static const danger = Color(0xFFE5484D);
-  static const brand = Color(0xFFED1C29); // YG red
-  static const topStrip = Color(0xFFED1C29); // top strip accent — now red
+  static const brand = Color(0xFFED1C29);
+  static const topStrip = Color(0xFFED1C29);
 }
 
-// A thin blue strip shown at the very top of every screen, for a
-// consistent brand accent across the whole app.
 class TopStrip extends StatelessWidget implements PreferredSizeWidget {
   const TopStrip({super.key});
   @override
@@ -45,20 +33,12 @@ class TopStrip extends StatelessWidget implements PreferredSizeWidget {
       Container(color: _C.topStrip, height: 5);
 }
 
-// ------------------------------------------------------------
-// MATERIAL DATABASE
-// Specific cutting force (kc1.1) and the exponent (mc) that
-// describes how cutting force changes with chip thickness, per
-// machining material group. These are standard published
-// reference values used across the industry (Kienzle model),
-// not specific to any one tool brand.
-// ------------------------------------------------------------
 class MaterialSpec {
   final String group;
   final String description;
   final double rmMin;
   final double rmMax;
-  final double kc11; // N/mm^2
+  final double kc11;
   final double mc;
   const MaterialSpec(
       this.group, this.description, this.rmMin, this.rmMax, this.kc11, this.mc);
@@ -153,12 +133,8 @@ const List<MaterialSpec> kMaterials = [
   MaterialSpec('O6', 'Graphite', 0, 0, 400, 0.25),
 ];
 
-// Badge color per top-level material family (P/K/M/N/S/H/O), used
-// as a small color tag in the picker so it reads at a glance like
-// the reference material browser.
 Color materialBadgeColor(String group) {
-  final letter = group[0];
-  switch (letter) {
+  switch (group[0]) {
     case 'P':
       return const Color(0xFFB9D6F0);
     case 'K':
@@ -176,32 +152,17 @@ Color materialBadgeColor(String group) {
   }
 }
 
-// ------------------------------------------------------------
-// NAMED MATERIALS
-// A much larger, real-world materials list (specific alloy
-// designations with SAE/DIN cross-references), linked to the
-// Walter machining groups above via each entry's resolved
-// Walter group code. This lets the material picker be searched
-// by an actual alloy name (e.g. "4140", "316", "Ti-6Al-4V")
-// instead of only browsing the 33 generic categories.
-// ------------------------------------------------------------
 class NamedMaterial {
-  final String name;
-  final String subGroup;
-  final String walterGroup; // resolves into kMaterials
-  final String hardnessHrc;
-  final String hardnessHrb;
-  final String machinability;
-  final String sae;
-  final String din;
-  final String
-      en; // BS970 "EN" number (e.g. EN8) — only for high-confidence matches
-  // Additional cross-reference standards (JIS/BS/AFNOR/SS/UNS/GOST/Brand),
-  // pipe-separated, e.g. "JIS S10C | BS 040A10 | GOST 10". Optional — most
-  // of the original hand-verified entries leave this blank; it's used by
-  // the bulk-imported YG-1 VDI 3323 cross-reference tables. Searchable
-  // alongside sae/din/en but not shown as a first-class column in the UI.
-  final String refs;
+  final String name,
+      subGroup,
+      walterGroup,
+      hardnessHrc,
+      hardnessHrb,
+      machinability,
+      sae,
+      din,
+      en,
+      refs;
   const NamedMaterial(
       this.name,
       this.subGroup,
@@ -215,7 +176,6 @@ class NamedMaterial {
       [this.refs = '']);
 }
 
-// Looks up the underlying kc1.1 / mc spec for a named material.
 MaterialSpec? materialSpecFor(NamedMaterial nm) {
   for (final m in kMaterials) {
     if (m.group == nm.walterGroup) return m;
@@ -704,27 +664,6 @@ const List<NamedMaterial> _kNamedMaterialsCore = [
       '18%', '4915, 4933, 4972', 'TiAl8Mo1V1', ''),
 ];
 
-// ------------------------------------------------------------
-// YG-1 VDI 3323 MATERIAL GROUPS CROSS-REFERENCE
-// Bulk-imported from YG-1's "Technical Information — Material
-// Groups" chart (VDI 3323 groups 1-41 under ISO P/M/K/N/S/H
-// families). That chart classifies by VDI group + HB/HRc only —
-// it has no kc1.1/mc Kienzle constants of its own, so each VDI
-// group here is mapped to the closest existing Walter kc1.1/mc
-// bucket above by hardness/composition (approximate, not a
-// verified match — see the walterGroup comment on each block).
-// Standard-code columns beyond SAE/DIN/EN (JIS/BS/AFNOR/SS/UNS/
-// GOST/Brand) are packed into `refs`, pipe-separated, since the
-// source table has more columns than the app's schema — still
-// fully searchable, just not shown as their own UI column.
-// Added incrementally, group by group, to keep each batch
-// checkable rather than transcribing all ~450 rows unchecked.
-// ------------------------------------------------------------
-
-// VDI Group 1 — Non-alloyed steel, ~0.15% C, Annealed, HB 125.
-// Mapped to Walter group 'P1, P6' (non/low-alloyed steel, low-med
-// strength, Rm 350-750) — the closest existing bucket for a soft
-// annealed low-carbon steel.
 const List<NamedMaterial> _kVdiGroup1 = [
   NamedMaterial(
       'St 37-2',
@@ -1214,23 +1153,11 @@ const List<NamedMaterial> _kVdiGroup1 = [
       'BS 1501160 | SS 1421 | Mat.No 1.8900'),
 ];
 
-// All named-material sources combined — this is what the rest of
-// the app searches/browses. Bulk-imported VDI groups are appended
-// after the hand-curated core list.
 final List<NamedMaterial> kNamedMaterials = [
   ..._kNamedMaterialsCore,
   ..._kVdiGroup1,
 ];
 
-// ------------------------------------------------------------
-// ISO TOLERANCE (HOLE & SHAFT FITS)
-// Tolerance WIDTH (the IT grade) uses the standard closed-form
-// ISO 286 formula, which is exact. Tolerance POSITION (which
-// letter sits where relative to nominal size) uses the classic
-// "preferred fits" reference table reproduced in most machine
-// design textbooks; treated here as an approximate reference —
-// see the caveat shown in the Tolerance screen.
-// ------------------------------------------------------------
 const List<double> kToleranceStepBounds = [
   3,
   6,
@@ -1262,10 +1189,6 @@ const Map<int, double> kItGradeMultiplier = {
   16: 1000,
 };
 
-// Shaft fundamental deviation per letter (micrometres), one
-// value per step in kToleranceStepBounds. c/d/e/f/g are the
-// UPPER deviation (clearance fits, negative); k/n/p/s/u are the
-// LOWER deviation (transition/interference fits, positive).
 const Map<String, List<double>> kShaftDeviation = {
   'c': [
     -60,
@@ -1335,19 +1258,13 @@ double _toleranceRangeGeoMean(double d) {
   return math.sqrt(lo * hi);
 }
 
-// IT value in micrometres for a given nominal size and grade.
 double itValueMicrons(double nominalMm, int grade) {
   final dGeo = _toleranceRangeGeoMean(nominalMm);
-  final i = 0.45 * math.pow(dGeo, 1 / 3) + 0.001 * dGeo; // tolerance unit, μm
+  final i = 0.45 * math.pow(dGeo, 1 / 3) + 0.001 * dGeo;
   final mult = kItGradeMultiplier[grade] ?? kItGradeMultiplier[7]!;
   return i * mult;
 }
 
-// Returns (upperDeviationMicrons, lowerDeviationMicrons) for a hole.
-// D/E/F/G and K/N/P/S are derived from the shaft table by mirroring
-// with a sign flip (the standard ISO 286 "Delta = 0" simplification,
-// exact for grades up to IT8 — the grades these letters are normally
-// paired with; it drifts slightly at higher grades).
 (double, double) holeDeviation(double nominalMm, int grade, String letter) {
   final it = itValueMicrons(nominalMm, grade);
   if (letter == 'H') return (it, 0);
@@ -1356,66 +1273,46 @@ double itValueMicrons(double nominalMm, int grade) {
   final mirror = letter.toLowerCase();
   final table = kShaftDeviation[mirror];
   if (table == null) return (it, 0);
+
   final idx = _toleranceStepIndex(nominalMm);
   final dev = table[idx];
 
   if (['d', 'e', 'f', 'g'].contains(mirror)) {
-    // Shaft clearance letters store the upper deviation (negative);
-    // the mirrored hole's lower deviation is the sign-flipped value.
     final ei = -dev;
     return (ei + it, ei);
   }
-  // k, n, p, s: shaft stores the lower deviation (positive); the
-  // mirrored hole's upper deviation is the sign-flipped value.
+
   final es = -dev;
   return (es, es - it);
 }
 
-// Returns (upperDeviationMicrons, lowerDeviationMicrons) for a shaft.
 (double, double) shaftDeviation(double nominalMm, int grade, String letter) {
   final it = itValueMicrons(nominalMm, grade);
   if (letter == 'h') return (0, -it);
   if (letter == 'js') return (it / 2, -it / 2);
+
   final idx = _toleranceStepIndex(nominalMm);
   final table = kShaftDeviation[letter];
   if (table == null) return (0, -it);
+
   final dev = table[idx];
   if (['c', 'd', 'e', 'f', 'g'].contains(letter)) {
-    return (dev, dev - it); // dev is upper
+    return (dev, dev - it);
   }
-  return (dev + it, dev); // dev is lower (k, n, p, s, u)
+  return (dev + it, dev);
 }
 
-// ------------------------------------------------------------
-// THREAD STANDARDS (for Tapping)
-// Major diameter and pitch are the defining constants of each
-// standard itself (not an empirical chart), so confidence here
-// is high. Values are entered as inches*25.4 / 25.4/TPI so the
-// underlying inch figure stays visible and auditable in the code.
-// NPT is the one exception: it's a tapered thread, so its true
-// tap drill size is conventionally read from a manufacturer
-// chart rather than computed — this uses the same diameter-minus-
-// pitch rule as the others, off NPT's standard nominal pipe OD,
-// as a reasonable approximation. Flagged in the UI.
-// ------------------------------------------------------------
 class ThreadSize {
   final String label;
   final double diameterMm;
   final double pitchMm;
-  // Published tap drill size (mm), where available from a verified
-  // source chart, rather than the computed D-pitch approximation.
-  // Null falls back to the formula in _recalculate().
   final double? publishedDrillMm;
+
   const ThreadSize(this.label, this.diameterMm, this.pitchMm,
       [this.publishedDrillMm]);
-
-  // TPI is how these standards are actually specified — pitch in mm
-  // is just the derived/stored form used internally for calculation.
   double get tpi => 25.4 / pitchMm;
 }
 
-// American UNC — published tap drill sizes per the YG Cutting Tools
-// technical chart (previously computed from the D-pitch formula only).
 const List<ThreadSize> kUNC = [
   ThreadSize('#1', 0.073 * 25.4, 25.4 / 64, 1.5),
   ThreadSize('#2', 0.086 * 25.4, 25.4 / 56, 1.8),
@@ -1444,8 +1341,6 @@ const List<ThreadSize> kUNC = [
   ThreadSize('2', 2.000 * 25.4, 25.4 / 4.5, 45.25),
 ];
 
-// American UNF — published tap drill sizes per the YG Cutting Tools
-// technical chart (previously computed from the D-pitch formula only).
 const List<ThreadSize> kUNF = [
   ThreadSize('#0', 0.060 * 25.4, 25.4 / 80, 1.3),
   ThreadSize('#1', 0.073 * 25.4, 25.4 / 72, 1.6),
@@ -1473,9 +1368,6 @@ const List<ThreadSize> kUNF = [
   ThreadSize('1-1/2', 1.500 * 25.4, 25.4 / 12, 36),
 ];
 
-// BSW (British Standard Whitworth) — full range, YG Cutting Tools
-// technical chart. Runs 3/32in to 3in (the chart's own range; it
-// doesn't cover 1/16in or beyond 3in, which the previous data here did).
 const List<ThreadSize> kBSW = [
   ThreadSize('3/32', 2.3812, 25.4 / 48, 1.8),
   ThreadSize('1/8', 3.175, 25.4 / 40, 2.5),
@@ -1506,10 +1398,6 @@ const List<ThreadSize> kBSW = [
   ThreadSize('3', 76.2, 25.4 / 3.5, 68.5),
 ];
 
-// STI UNC — Screw Thread Insert taps (Unified Coarse), YG Cutting Tools
-// technical chart. Needs a larger tap drill than plain UNC for the same
-// nominal size, since the thread is cut into a helical wire insert
-// bushing rather than directly into the base material.
 const List<ThreadSize> kSTIUNC = [
   ThreadSize('#2', 2.1844, 25.4 / 56, 2.3),
   ThreadSize('#3', 2.5146, 25.4 / 48, 2.7),
@@ -1535,8 +1423,6 @@ const List<ThreadSize> kSTIUNC = [
   ThreadSize('1-1/2', 38.1, 25.4 / 6, 39.25),
 ];
 
-// STI UNF — Screw Thread Insert taps (Unified Fine), YG Cutting Tools
-// technical chart.
 const List<ThreadSize> kSTIUNF = [
   ThreadSize('#2', 2.1844, 25.4 / 64, 2.3),
   ThreadSize('#3', 2.5146, 25.4 / 56, 2.7),
@@ -1562,10 +1448,6 @@ const List<ThreadSize> kSTIUNF = [
   ThreadSize('1-1/2', 38.1, 25.4 / 12, 38.75),
 ];
 
-// BSF (British Standard Fine) — full range through 2-3/4in (the
-// chart marks tap drill "n/a" beyond that, so those aren't included).
-// Not covered by the YG Cutting Tools technical chart (kept from an
-// earlier, separately verified source rather than removed).
 const List<ThreadSize> kBSF = [
   ThreadSize('3/16', 4.763, 0.794, 4.00),
   ThreadSize('7/32', 5.556, 0.907, 4.60),
@@ -1594,14 +1476,6 @@ const List<ThreadSize> kBSF = [
   ThreadSize('2-3/4', 69.850, 4.234, 64.30),
 ];
 
-// BSP (parallel pipe / G-thread), YG Cutting Tools technical chart.
-// Major diameters per ISO 228-1 (not the fraction-of-an-inch rule that
-// applies to BSW/UNC — a pipe thread's nominal size names the bore it
-// fits, not its own diameter). G1-5/8" and G2-3/8" aren't standard
-// ISO 228 sizes but do appear in this chart; their major diameters are
-// derived from the chart's own core-diameter column plus the ~2.316mm
-// major-minus-core offset measured from this chart's other 11-TPI
-// sizes (consistent to +/-0.003mm across all of them).
 const List<ThreadSize> kBSP = [
   ThreadSize('1/8', 9.728, 25.4 / 28, 8.8),
   ThreadSize('1/4', 13.157, 25.4 / 19, 11.8),
@@ -1629,15 +1503,6 @@ const List<ThreadSize> kBSP = [
   ThreadSize('4', 113.03, 25.4 / 11, 110.5),
 ];
 
-// BSPT (Whitworth taper pipe thread, 1:16 taper) — YG Cutting Tools
-// technical chart. Diameter matches the corresponding BSP (G) parallel
-// size (ISO 7-1 uses the same major diameters as ISO 228-1 for the same
-// nominal size); R1/16 has no G-series equivalent, so it uses its own
-// verified major diameter (7.723mm). Drill size uses the chart's
-// "without reamer" figure (the more common shop practice without a
-// separate reaming pass) — the chart's "with reamer" figures are listed
-// alongside for reference: 1/16"=6.1, 1/8"=8.1, 1/4"=10.7, 3/8"=14.2,
-// 1/2"=17.6, 3/4"=23, 1"=29, 1-1/4"=37.5, 1-1/2"=43.5, 2"=54.9 (mm).
 const List<ThreadSize> kBSPT = [
   ThreadSize('1/16', 7.723, 25.4 / 28, 6.2),
   ThreadSize('1/8', 9.728, 25.4 / 28, 8.2),
@@ -1651,11 +1516,6 @@ const List<ThreadSize> kBSPT = [
   ThreadSize('2', 59.614, 25.4 / 11, 55.5),
 ];
 
-// STI — ISO metric coarse Screw Thread Insert taps, YG Cutting Tools
-// technical chart. Kept separate from kMetricCoarse/kMetricFine/
-// kMetricThreadSizes (not merged into the automatic lookup) since the
-// same nominal size+pitch needs a distinctly larger drill for an
-// insert than for a plain tapped hole.
 const List<ThreadSize> kSTIMetricCoarse = [
   ThreadSize('M2', 2, 0.4, 2.1),
   ThreadSize('M2.5', 2.5, 0.45, 2.65),
@@ -1679,10 +1539,6 @@ const List<ThreadSize> kSTIMetricCoarse = [
   ThreadSize('M30', 30, 3.5, 31),
 ];
 
-// Metric — ISO coarse-pitch threads, YG Cutting Tools technical chart.
-// Used both as a selectable standard (imperial-style picker, when
-// added) and for the automatic drill-size lookup in metric Tapping —
-// see kMetricThreadSizes below.
 const List<ThreadSize> kMetricCoarse = [
   ThreadSize('M1', 1, 0.25, 0.75),
   ThreadSize('M1.1', 1.1, 0.25, 0.85),
@@ -1729,9 +1585,6 @@ const List<ThreadSize> kMetricCoarse = [
   ThreadSize('M68', 68, 6, 62),
 ];
 
-// Metric — ISO fine-pitch threads, YG Cutting Tools technical chart.
-// Several sizes appear more than once (one row per available pitch) —
-// the label includes the pitch to keep them unique in a picker.
 const List<ThreadSize> kMetricFine = [
   ThreadSize('M2.2', 2.2, 0.35, 2.15),
   ThreadSize('M3', 3, 0.35, 2.65),
@@ -1820,23 +1673,11 @@ const List<ThreadSize> kMetricFine = [
   ThreadSize('M52x3', 52, 3, 49),
 ];
 
-// Combined Metric Coarse + Fine, for the automatic drill-size lookup in
-// metric Tapping: whatever Diameter+Pitch the user types, if it matches
-// a row here (within a small tolerance) the chart's own drill size is
-// used instead of the D-pitch formula. STI Metric Coarse is
-// deliberately excluded — it shares nominal sizes/pitches with the
-// plain charts but needs a different (larger) drill, so merging it in
-// would silently pick the wrong one.
 const List<ThreadSize> kMetricThreadSizes = [
   ...kMetricCoarse,
   ...kMetricFine,
 ];
 
-// NPT (ANSI B1.20.1) — full range with published tap drill sizes.
-// Still tapered, so this reflects the chart's own values rather
-// than a computed approximation. Not covered by the YG Cutting Tools
-// technical chart (kept from an earlier, separately verified source
-// rather than removed) — BSPT above is that chart's taper-pipe entry.
 const List<ThreadSize> kNPT = [
   ThreadSize('1/16', 7.895, 0.941, 6.00),
   ThreadSize('1/8', 10.242, 0.941, 8.25),
@@ -1885,10 +1726,6 @@ const List<String> kImperialThreadStandardNames = [
 
 enum Operation { turning, milling, drilling, tapping }
 
-// Drilling and Milling ask which tool family is being used before
-// opening the calculator — Solid Carbide vs Indexable — since the
-// feed-rate formula differs between them (indexable tools compute
-// feed off a number-of-inserts count, the same way milling does).
 enum ToolType { solidCarbide, indexable }
 
 enum Units { metric, imperial }
@@ -1912,9 +1749,6 @@ const List<OpMeta> kOperations = [
       Icons.build_circle_outlined),
 ];
 
-// Home-screen photo template assets — a real machining photo plus a
-// semi-transparent red icon overlay, one pair per operation, used by
-// the home grid cards instead of the plain icon-on-white-panel style.
 const Map<Operation, String> kOperationPhotos = {
   Operation.turning: 'Assets/turning.png',
   Operation.milling: 'Assets/milling.png',
@@ -1922,15 +1756,9 @@ const Map<Operation, String> kOperationPhotos = {
   Operation.tapping: 'Assets/tapping.png',
 };
 
-// ============================================================
-// APP SHELL
-// ============================================================
 class MachiningApp extends StatelessWidget {
   const MachiningApp({super.key});
 
-  // Above this viewport width, the app renders inside a centered
-  // phone-width frame instead of stretching full-bleed — this only
-  // matters on desktop web browsers; phones never hit this width.
   static const double _wideScreenBreakpoint = 700;
   static const double _frameWidth = 430;
 
@@ -1947,9 +1775,9 @@ class MachiningApp extends StatelessWidget {
       builder: (context, child) {
         final width = MediaQuery.of(context).size.width;
         if (width < _wideScreenBreakpoint || child == null) return child!;
+
         return Container(
-          color:
-              const Color(0xFFE8E4EE), // surrounding backdrop on wide screens
+          color: const Color(0xFFE8E4EE),
           child: Center(
             child: Container(
               width: _frameWidth,
@@ -1966,10 +1794,6 @@ class MachiningApp extends StatelessWidget {
                 ],
               ),
               child: MediaQuery(
-                // Re-anchor the inner app's notion of "screen size" to
-                // the frame width, so every screen's LayoutBuilder/
-                // Expanded sizing (already written for phone widths)
-                // behaves exactly the same inside the frame.
                 data: MediaQuery.of(context).copyWith(
                   size: Size(_frameWidth, MediaQuery.of(context).size.height),
                 ),
@@ -1984,17 +1808,6 @@ class MachiningApp extends StatelessWidget {
   }
 }
 
-// ============================================================
-// HOME SCREEN — building-photo header (fading into the page
-// background) with the animated logo badge floating on top,
-// red action banner, and grid of tool cards.
-// ============================================================
-
-// Plays an animated GIF through its frames exactly once, then holds
-// on the final frame — rather than looping forever the way
-// Image.asset does natively for an animated GIF. Used for the home
-// screen's logo, which should only "play" the one time it first
-// appears, not repeatedly for as long as it's on screen.
 class _PlayOnceGif extends StatefulWidget {
   final String assetPath;
   final double height;
@@ -2033,17 +1846,15 @@ class _PlayOnceGifState extends State<_PlayOnceGif> {
         _durations = durations;
       });
       _scheduleNext();
-    } catch (_) {
-      // If decoding fails for any reason, just leave _frames null —
-      // build() below renders a blank placeholder rather than crash.
-    }
+    } catch (_) {}
   }
 
   void _scheduleNext() {
     final frames = _frames;
     final durations = _durations;
     if (frames == null || durations == null) return;
-    if (_index >= frames.length - 1) return; // already on the last frame
+    if (_index >= frames.length - 1) return;
+
     _timer = Timer(durations[_index], () {
       if (!mounted) return;
       setState(() => _index++);
@@ -2081,8 +1892,6 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ---- Header: building photo fading into the background,
-            // with the logo badge floating on top ----
             SizedBox(
               height: 150,
               width: double.infinity,
@@ -2123,7 +1932,6 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // ---- Promo banner: icon + title + tagline ----
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -2192,9 +2000,6 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // ---- 3x2 grid: 4 operations + Material + Tolerance —
-                    // sized to the exact space available, so it never
-                    // needs to scroll regardless of screen size.
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
@@ -2230,6 +2035,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                           ];
+
                           const rows = 2;
                           final itemWidth = (constraints.maxWidth -
                                   spacing * (crossAxisCount - 1)) /
@@ -2237,6 +2043,7 @@ class HomeScreen extends StatelessWidget {
                           final itemHeight =
                               (constraints.maxHeight - spacing * (rows - 1)) /
                                   rows;
+
                           return GridView.count(
                             crossAxisCount: crossAxisCount,
                             crossAxisSpacing: spacing,
@@ -2344,15 +2151,10 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// Drilling and Milling ask which tool family before opening the
-// calculator, since the feed formula differs (see ToolType). Turning
-// and Tapping don't have this choice and open straight through.
 void _openOperation(BuildContext context, OpMeta op) {
   if (op.operation != Operation.drilling && op.operation != Operation.milling) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CalculatorDetailScreen(meta: op)),
-    );
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => CalculatorDetailScreen(meta: op)));
     return;
   }
 
@@ -2367,10 +2169,8 @@ void _openOperation(BuildContext context, OpMeta op) {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Solid carbide and indexable tools use different feed-rate '
-            'formulas. Choose which one you\'re using.',
-            style: TextStyle(height: 1.4),
-          ),
+              'Solid carbide and indexable tools use different feed-rate formulas. Choose which one you\'re using.',
+              style: TextStyle(height: 1.4)),
           const SizedBox(height: 20),
           _toolTypeButton(ctx, 'Solid Carbide', ToolType.solidCarbide),
           const SizedBox(height: 10),
@@ -2381,11 +2181,10 @@ void _openOperation(BuildContext context, OpMeta op) {
   ).then((toolType) {
     if (toolType == null || !context.mounted) return;
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CalculatorDetailScreen(meta: op, toolType: toolType),
-      ),
-    );
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                CalculatorDetailScreen(meta: op, toolType: toolType)));
   });
 }
 
@@ -2408,14 +2207,12 @@ Future<void> _openAboutYgWebsite(BuildContext context) async {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the YG-1 website.')),
-      );
+          const SnackBar(content: Text('Could not open the YG-1 website.')));
     }
   } catch (_) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the YG-1 website.')),
-      );
+          const SnackBar(content: Text('Could not open the YG-1 website.')));
     }
   }
 }
@@ -2459,17 +2256,13 @@ Widget _supportRow(IconData icon, String text) {
   );
 }
 
-// Small circular-outline icon + label, used for low-emphasis utility
-// links (About/Support) at the very bottom of the home screen.
 class _SmallIconLink extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _SmallIconLink({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+
+  const _SmallIconLink(
+      {required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2495,10 +2288,9 @@ class _SmallIconLink extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: _C.textDark,
-                fontSize: 9.5,
-                fontWeight: FontWeight.w600,
-              ),
+                  color: _C.textDark,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -2507,19 +2299,14 @@ class _SmallIconLink extends StatelessWidget {
   }
 }
 
-// One entry shown in the home grid — either a machining operation
-// (image icon) or a reference tool (Material icon), all rendered
-// through the same card so the grid stays visually consistent.
 class _HomeGridEntry {
   final String label;
   final String? iconAsset;
   final IconData? iconData;
-  // When set, the card uses the photo-template layout (photo with an
-  // optional icon overlay on top, solid red label banner on the
-  // bottom) instead of the plain icon-on-white-panel fallback.
   final String? photoAsset;
   final String? photoOverlayAsset;
   final VoidCallback onTap;
+
   const _HomeGridEntry({
     required this.label,
     this.iconAsset,
@@ -2530,15 +2317,6 @@ class _HomeGridEntry {
   });
 }
 
-// A single home-grid card. Two layouts:
-// - Photo template (when entry.photoAsset is set): a machining photo
-//   fills the top area with the operation's red icon overlaid semi-
-//   transparently on top, and a solid red banner with the label sits
-//   along the bottom — matches the reference button template.
-// - Plain fallback (used until an operation has its own photo): a
-//   large icon centered over a tinted panel, with the label below.
-// No CTA button in either case — the whole card is tappable, so a
-// separate button just duplicated the action while eating space.
 class _HomeGridCard extends StatelessWidget {
   final _HomeGridEntry entry;
   const _HomeGridCard({required this.entry});
@@ -2631,14 +2409,10 @@ class _HomeGridCard extends StatelessWidget {
   }
 }
 
-// ============================================================
-// DETAIL SCREEN — one operation's calculator
-// ============================================================
 class CalculatorDetailScreen extends StatefulWidget {
   final OpMeta meta;
-  // Only meaningful for Drilling and Milling — null for Turning/
-  // Tapping, which don't have a tool-family choice.
   final ToolType? toolType;
+
   const CalculatorDetailScreen({super.key, required this.meta, this.toolType});
 
   @override
@@ -2651,105 +2425,61 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
   bool get _isIndexable => _toolType == ToolType.indexable;
 
   final _diameterCtrl = TextEditingController();
-  final _speedCtrl = TextEditingController(); // cutting speed Vc
-  final _rpmCtrl = TextEditingController(); // spindle speed n
-  final _feedCtrl =
-      TextEditingController(); // feed per rev/tooth, or thread pitch for tapping
-  final _feedRateCtrl = TextEditingController(); // feed rate mm/min or in/min
-  // — an alternative way to enter feed for Turning/Milling/Drilling,
-  // synced bidirectionally with _feedCtrl the same way Vc <-> RPM is.
-  // Not used for Tapping, where feed is thread pitch, not a free choice.
+  final _speedCtrl = TextEditingController();
+  final _rpmCtrl = TextEditingController();
+  final _feedCtrl = TextEditingController();
+  final _feedRateCtrl = TextEditingController();
   final _depthCtrl = TextEditingController();
   final _widthCtrl = TextEditingController();
   final _teethCtrl = TextEditingController();
   final _lengthCtrl = TextEditingController();
-  final _toolPriceCtrl = TextEditingController(); // cost of one tool/insert
-  final _edgesCtrl =
-      TextEditingController(); // number of usable cutting edges/corners on that tool
-  final _toolLifeCtrl =
-      TextEditingController(); // AVERAGE components produced per edge —
-  // real edges don't wear identically, so this is an estimate,
-  // the same way any tooling-cost model works in practice.
-  final _holesCtrl =
-      TextEditingController(); // number of holes — Drilling & Tapping only
-  final _passesCtrl =
-      TextEditingController(); // number of passes — Turning & Milling only
+  final _toolPriceCtrl = TextEditingController();
+  final _edgesCtrl = TextEditingController();
+  final _toolLifeCtrl = TextEditingController();
+  final _holesCtrl = TextEditingController();
+  final _passesCtrl = TextEditingController();
 
   double? _rpm;
   double? _feedRate;
   double? _mrr;
   double? _time;
-  double? _drillSize; // tapping only
-  double? _kc; // specific cutting force, N/mm^2
-  double? _cuttingForce; // Fc, N
-  double? _torque; // Nm
-  double? _power; // kW
-  double? _cpc; // Cost Per Component = tool price / components per tool life
-  double? _totalTime; // Cycle time × number of holes — Drilling & Tapping
+  double? _drillSize;
+  double? _kc;
+  double? _cuttingForce;
+  double? _torque;
+  double? _power;
+  double? _cpc;
+  double? _totalTime;
   MaterialSpec? _material;
-  // When a specific alloy is picked via search (e.g. "4140"), this
-  // holds its name for display; the underlying kc1.1/mc still comes
-  // from _material, resolved via that alloy's Walter group.
   String? _materialDisplayName;
-  // Whether the material-force stats (kc, Fc, torque, power) are shown
-  // under the primary results in the gradient panel, or collapsed.
   bool _resultsExpanded = true;
 
-  // Tapping only: which thread standard is driving diameter/pitch.
-  // 'Metric' means the user types diameter+pitch manually (default,
-  // original behaviour). Any other value means a size was picked
-  // from that standard's table, which fills diameter/pitch for you.
   String _threadStandard = 'BSW';
   ThreadSize? _selectedThreadSize;
-
-  // Tapping only: Cut taps remove material (drill = D - pitch, ~75%
-  // thread engagement). Form/roll taps displace material upward into
-  // the crest instead of cutting it, so they use their own rule:
-  // drill = D - (pitch / 2). Metric only — see the Tapping field grid.
   bool _isFormTap = false;
+
   static const double kCutTapFactor = 1.0;
   static const double kFormTapFactor = 0.5;
 
-  // Tapping only: chamfer (lead) form, for the torque/power chip-
-  // thickness formula. Chamfer length l4 = c x pitch, where c is the
-  // number of chamfered threads — a standard tap-catalog figure that
-  // varies by chamfer form, not something worth typing in by hand.
-  // Forms A-E and their thread-count bands per DIN 2175 (forming/roll
-  // taps) / DIN 2197 (cutting taps); each entry below uses the
-  // midpoint of its published range.
   String _tapChamferForm = 'C';
   static const Map<String, double> kTapChamferFactors = {
-    'A': 5.5, // 5-6 threads — through hole
-    'B': 4.5, // 4-5 threads — through hole
-    'C': 2.5, // 2-3 threads — blind & through hole (most common/general)
-    'D': 4.5, // 4-5 threads — through hole
-    'E': 1.75, // 1.5-2 threads — blind hole
+    'A': 5.5,
+    'B': 4.5,
+    'C': 2.5,
+    'D': 4.5,
+    'E': 1.75,
   };
 
-  // Whichever of Vc / RPM the user typed into most recently is the
-  // "driving" value; the other field is kept in sync automatically.
   bool _rpmIsDriving = false;
-  // Same idea for Feed [f] vs Feed rate [Vf] (Turning/Milling/Drilling
-  // only) — whichever the user is entering drives the other.
   bool _feedRateIsDriving = false;
-  // Guards against a programmatic text update re-triggering its own
-  // listener and causing an infinite loop.
   bool _syncing = false;
-  // Hard reentrancy guard on _recalculate itself — belt-and-braces on
-  // top of _syncing, so no code path (present or future) can ever
-  // cause a recursive/looping recalculation.
   bool _recalculating = false;
-  // Real focus state for the two fields — used as the primary signal
-  // for which one is "driving", since it can't be fooled by a stray
-  // or missed listener callback the way a plain flag can.
+
   final FocusNode _speedFocusNode = FocusNode();
   final FocusNode _rpmFocusNode = FocusNode();
   final FocusNode _feedFocusNode = FocusNode();
   final FocusNode _feedRateFocusNode = FocusNode();
 
-  // Fixed assumptions used in the force/power model, since we
-  // don't add extra fields for these: 90 degree entry angle
-  // (turning), and 80% overall machine efficiency.
   static const double _assumedEfficiency = 0.80;
 
   Operation get _operation => widget.meta.operation;
@@ -2758,10 +2488,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Every field recalculates live as the user types — no
-    // "Calculate" button. The two speed fields also need to track
-    // which one is currently driving the spindle-speed relationship.
     _diameterCtrl.addListener(_recalculate);
+
     _speedCtrl.addListener(() {
       if (_syncing) return;
       _rpmIsDriving = false;
@@ -2772,11 +2500,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       _rpmIsDriving = true;
       _recalculate();
     });
-    // Also update the driving flag the moment focus lands on a field
-    // (before any keystroke), so tapping into RPM immediately makes
-    // it the driving field rather than waiting for the first digit —
-    // and so the flag stays correct as the fallback for whenever
-    // neither field currently has focus.
     _speedFocusNode.addListener(() {
       if (_speedFocusNode.hasFocus) {
         _rpmIsDriving = false;
@@ -2789,6 +2512,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         setState(() {});
       }
     });
+
     _feedCtrl.addListener(() {
       if (_syncing) return;
       _feedRateIsDriving = false;
@@ -2811,6 +2535,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         setState(() {});
       }
     });
+
     _depthCtrl.addListener(_recalculate);
     _widthCtrl.addListener(_recalculate);
     _teethCtrl.addListener(_recalculate);
@@ -2855,20 +2580,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
   String get uMrr => _units == Units.metric ? 'cm3/min' : 'in3/min';
   String get uLength => _units == Units.metric ? 'mm' : 'in';
 
-  // Sets a controller's text without letting its own listener fire.
   void _setSilently(TextEditingController ctrl, String text) {
     _syncing = true;
     ctrl.text = text;
     _syncing = false;
   }
 
-  // ============================================================
-  // MATH
-  // Runs on every keystroke. Computes whatever it can from
-  // whatever fields are currently filled in — no button, no
-  // all-or-nothing validation. Missing/invalid fields just mean
-  // their downstream results stay blank until filled in.
-  // ============================================================
   void _recalculate() {
     if (_recalculating) return;
     _recalculating = true;
@@ -2879,10 +2596,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     }
   }
 
-  // Metric Tapping only: if the typed Diameter+Pitch matches a row in
-  // kMetricThreadSizes (within a small tolerance, to allow for rounding
-  // in what's typed), returns that chart's published drill size —
-  // otherwise null, so the caller falls back to the D-pitch formula.
   double? _lookupMetricPublishedDrill(double diameterMm, double pitchMm) {
     for (final size in kMetricThreadSizes) {
       if ((size.diameterMm - diameterMm).abs() < 0.01 &&
@@ -2904,18 +2617,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     final z = double.tryParse(_teethCtrl.text);
     final L = double.tryParse(_lengthCtrl.text);
 
-    // Resolve the Vc <-> RPM relationship, keeping the non-driving
-    // field's on-screen text in sync with whichever one is driving.
-    // Live focus is the primary signal — it can't be fooled by a
-    // stray/missed listener callback the way a plain flag alone can.
-    // When neither field currently has focus (e.g. right after a
-    // units toggle, or before the user has touched either field yet)
-    // fall back to whichever one drove last.
     final rpmDriving = _rpmFocusNode.hasFocus
         ? true
         : _speedFocusNode.hasFocus
             ? false
             : _rpmIsDriving;
+
     if (D != null && D > 0) {
       if (!rpmDriving && Vc != null && Vc > 0) {
         n = _units == Units.metric
@@ -2930,15 +2637,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       }
     }
 
-    // Resolve the Feed [f] <-> Feed rate [Vf] relationship, the same
-    // way, for Turning/Milling/Drilling. Tapping's "feed" is thread
-    // pitch — a fixed property of the thread, not a free second
-    // input — so it's excluded here and keeps its original one-way
-    // behaviour (Vf follows from pitch × RPM only).
     if (_operation != Operation.tapping && n != null && n > 0) {
-      // Indexable milling/drilling compute feed off an insert count,
-      // like Vf = fz × Z × n; turning and solid-carbide drilling use
-      // the simpler Vf = f × n.
       double? multiplier;
       if (_operation == Operation.milling ||
           (_operation == Operation.drilling && _isIndexable)) {
@@ -2953,6 +2652,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
             : _feedFocusNode.hasFocus
                 ? false
                 : _feedRateIsDriving;
+
         if (!feedRateDriving && f != null && f > 0) {
           feedRateVal = f * multiplier;
           if (feedRateVal.isFinite) {
@@ -2968,9 +2668,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     final toolPrice = double.tryParse(_toolPriceCtrl.text);
     final toolLifePerEdge = double.tryParse(_toolLifeCtrl.text);
     final edgesEntered = double.tryParse(_edgesCtrl.text);
-    // Blank/invalid defaults to 1 edge, so solid tools (which don't
-    // have a multi-edge concept) work the same as before this field
-    // was added — only indexable inserts typically need > 1 here.
     final edges =
         (edgesEntered != null && edgesEntered > 0) ? edgesEntered : 1.0;
 
@@ -2985,14 +2682,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       _torque = null;
       _power = null;
       _totalTime = null;
-      // CPC only applies to Turning and Indexable Milling — those are
-      // the two cases where an insert's per-edge economics actually
-      // matter here. It's computed independently of the cutting-
-      // parameter guards below, so it still shows up even before
-      // D/Vc/f are entered.
-      // CPC = Tool Price / (Cutting Edges × Avg. Life per Edge) —
-      // the total components one tool produces across every edge it
-      // has, not just one edge's worth.
+
       final cpcApplies = _operation == Operation.turning ||
           (_operation == Operation.milling && _isIndexable);
       _cpc = (cpcApplies &&
@@ -3003,12 +2693,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           ? toolPrice / (edges * toolLifePerEdge)
           : null;
 
-      if (D == null || D <= 0 || Vc == null || Vc <= 0 || n == null || n <= 0) {
-        return; // not enough info yet — leave results blank
-      }
-      _rpm = n;
+      if (D == null || D <= 0 || Vc == null || Vc <= 0 || n == null || n <= 0)
+        return;
 
-      if (f == null || f <= 0) return; // feed still needed for everything else
+      _rpm = n;
+      if (f == null || f <= 0) return;
 
       switch (_operation) {
         case Operation.turning:
@@ -3021,13 +2710,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           break;
 
         case Operation.drilling:
-          // Indexable drills (e.g. spade/U-drills) compute feed off a
-          // number-of-inserts count, the same way milling does — the
-          // "feed" field becomes feed-per-insert rather than
-          // feed-per-revolution. Solid carbide (twist) drills keep
-          // the simple per-revolution formula.
           if (_isIndexable) {
-            if (z == null || z <= 0) return; // insert count required
+            if (z == null || z <= 0) return;
             final vf = f * z * n;
             _feedRate = vf;
             _time = (L != null && L > 0) ? L / vf : null;
@@ -3045,7 +2729,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           break;
 
         case Operation.milling:
-          if (z == null || z <= 0) return; // teeth count required for milling
+          if (z == null || z <= 0) return;
           final vf = f * z * n;
           _feedRate = vf;
           _time = (L != null && L > 0) ? L / vf : null;
@@ -3058,35 +2742,19 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         case Operation.tapping:
           final vf = f * n;
           _feedRate = vf;
-          // Feed rate isn't a free input for tapping (pitch is fixed by
-          // the thread), so it's shown as a computed/read-only field —
-          // kept in sync here the same way Vc/RPM sync themselves.
           if (vf.isFinite) _setSilently(_feedRateCtrl, vf.toStringAsFixed(2));
-          // Cycle time = tap-in + retract. A rigid tap has to reverse the
-          // spindle and back out of the hole at the same feed rate it went
-          // in at, so the honest cycle time is double the forward-only
-          // pass, not just the time to reach depth.
+
           _time = (L != null && L > 0) ? (2 * L / vf) : null;
-          // If a standard size with a verified published drill size is
-          // selected (imperial) — or the typed Diameter+Pitch matches one
-          // (metric) — and this is a Cut Tap, use that chart value
-          // directly — it's more accurate than the D-pitch approximation,
-          // especially for tapered threads like NPT/BSPT. Form taps
-          // always use the formula, since these charts are for cut taps.
+
           final published = _isFormTap
               ? null
               : _units == Units.imperial
                   ? _selectedThreadSize?.publishedDrillMm
                   : _lookupMetricPublishedDrill(D, f);
+
           if (published != null) {
             _drillSize = published;
           } else {
-            // Cut tap: drill = D - (1.0 x pitch), roughly 75% thread
-            // engagement — the widely used rule of thumb. Form/roll
-            // tap (metric only): drill = D - (0.5 x pitch), i.e.
-            // Nominal Diameter - (Pitch / 2) — a larger hole since
-            // material is displaced upward rather than cut away.
-            // Always reported in mm, regardless of the unit toggle.
             final factor = _isFormTap ? kFormTapFactor : kCutTapFactor;
             _drillSize = _units == Units.metric
                 ? (D - factor * f)
@@ -3095,10 +2763,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           break;
       }
 
-      // Total cycle time across a batch — Drilling/Tapping use "No.
-      // of Holes", Turning/Milling use "No. of Passes". _time above
-      // always stays the per-unit (per-hole or per-pass) figure;
-      // this is that × count.
       if (_time != null) {
         double? count;
         if (_operation == Operation.drilling ||
@@ -3111,18 +2775,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         _totalTime = (count != null && count > 0) ? _time! * count : null;
       }
 
-      // ----------------------------------------------------------
-      // MATERIAL-SPECIFIC FORCE / TORQUE / POWER
-      // Uses the Kienzle specific-cutting-force model: kc =
-      // kc1.1 / h^mc. Chip thickness h and chip area A depend on
-      // the operation's geometry, so each gets its own (standard,
-      // simplified) approximation. Tapping uses the standard tap
-      // chip-thickness formula (needs No. of Flutes and Chamfer
-      // Length filled in) rather than a discrete depth-of-cut. All
-      // internal geometry is normalized to millimetres regardless of the
-      // Metric/Imperial toggle, since kc1.1 is inherently defined
-      // in N/mm^2; results are reported in N, Nm and kW regardless
-      // of the unit toggle.
       if (_material != null) {
         double mm(double v) => _units == Units.metric ? v : v * 25.4;
         double mPerMin(double v) => _units == Units.metric ? v : v * 0.3048;
@@ -3169,18 +2821,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
             }
             break;
           case Operation.tapping:
-            // Nominal chip thickness per flute along the tap's chamfer
-            // (lead) section: ae = P^2 x 0.5 / (z x l4), where P is
-            // pitch, z is the number of flutes, and l4 is the chamfer
-            // length — the standard formula for cutting-tap chip load.
-            // l4 = c x P, where c (number of chamfered threads) comes
-            // from the selected chamfer form (A-E, DIN 2175/2197)
-            // rather than being typed in — see kTapChamferFactors.
-            // The corresponding total chip cross-section, summed over
-            // all engaged flutes, is P^2 x 0.5 (the z cancels out,
-            // since more flutes each take a thinner, not smaller-area,
-            // bite). Needs No. of Flutes filled in; leave it blank to
-            // skip this and keep the other tapping results.
             if (z != null && z > 0) {
               final c = kTapChamferFactors[_tapChamferForm] ?? 2.5;
               final l4mm = c * fmm;
@@ -3234,13 +2874,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     });
   }
 
-  // Builds a one-page PDF summary of the currently entered parameters
-  // and computed results, then opens the native share/print sheet so
-  // it can be saved, emailed, or printed.
-  // Helvetica (the default PDF font) has no Unicode support, so any
-  // special character here (em-dash, superscript, ®, etc.) would
-  // throw at render time. Swap the common ones for ASCII equivalents
-  // and strip anything else that slips through.
   String _pdfSafe(String s) {
     return s
         .replaceAll('—', '-')
@@ -3255,10 +2888,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
         .replaceAll(RegExp(r'[^\x00-\x7F]'), '');
   }
 
-  // A simple hand-built bar chart for the PDF: each bar's height is
-  // scaled to that stat's own value relative to the largest value in
-  // the set, with the exact figure and unit labeled on/under the bar
-  // so it stays legible even though the metrics use different units.
   pw.Widget _pdfBarChart(List<(String, double, String)> stats, PdfColor brand) {
     if (stats.isEmpty) return pw.SizedBox();
     const maxBarHeight = 90.0;
@@ -3305,8 +2934,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     return pw.Container(
       padding: const pw.EdgeInsets.only(top: 10),
       decoration: const pw.BoxDecoration(
-        border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
-      ),
+          border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300))),
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.end,
         children: bars,
@@ -3315,11 +2943,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
   }
 
   Future<void> _exportPdf() async {
-    // Helvetica (dart_pdf's default base font) has no Unicode table,
-    // which is what triggers the "no Unicode support" console
-    // warnings. Loading a real Unicode font up front and setting it
-    // as the document theme fixes that properly instead of just
-    // avoiding certain characters.
     pw.Font? baseFont;
     pw.Font? boldFont;
     try {
@@ -3337,16 +2960,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
     final brand = PdfColor.fromInt(0xFFED1C29);
 
-    // Load the YG-1 logo to use as a faint diagonal watermark behind
-    // the report content. If the asset can't be decoded for any
-    // reason, fall back to no watermark rather than failing export.
     pw.MemoryImage? watermark;
     try {
       final logoData = await rootBundle.load('Assets/logo_animated.gif');
       watermark = pw.MemoryImage(logoData.buffer.asUint8List());
-    } catch (_) {
-      watermark = null;
-    }
+    } catch (_) {}
 
     final paramRows = <List<String>>[];
     void addParam(String label, TextEditingController ctrl, String unit) {
@@ -3410,6 +3028,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
 
     final resultRows = <List<String>>[];
     final chartStats = <(String, double, String)>[];
+
     void addResult(String label, double? value, String unit,
         {bool chart = false}) {
       if (value == null) return;
@@ -3426,6 +3045,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     addResult('Cycle time', _time, 'min', chart: true);
     addResult('Total cycle time', _totalTime, 'min', chart: true);
     addResult('Cost per component (CPC)', _cpc, '');
+
     if (_material != null) {
       addResult('Specific cutting force (kc)', _kc, 'N/mm2');
       addResult('Main cutting force (Fc)', _cuttingForce, 'N');
@@ -3506,14 +3126,9 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
 
     final bytes = await doc.save();
     await Printing.sharePdf(
-      bytes: bytes,
-      filename: 'yg_${_operation.name}_report.pdf',
-    );
+        bytes: bytes, filename: 'yg_${_operation.name}_report.pdf');
   }
 
-  // ============================================================
-  // UI
-  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3531,9 +3146,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               height: 28,
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: _C.cardAlt,
-                borderRadius: BorderRadius.circular(8),
-              ),
+                  color: _C.cardAlt, borderRadius: BorderRadius.circular(8)),
               child: Icon(widget.meta.iconData, color: _C.brand, size: 16),
             ),
             const SizedBox(width: 10),
@@ -3570,10 +3183,9 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   child: InkWell(
                     onTap: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const MaterialReferenceScreen()),
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const MaterialReferenceScreen()));
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3581,11 +3193,10 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                         Text(
                           'View data reference',
                           style: TextStyle(
-                            color: _accent,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            decoration: TextDecoration.underline,
-                          ),
+                              color: _accent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline),
                         ),
                         Icon(Icons.arrow_forward, size: 12, color: _accent),
                       ],
@@ -3608,16 +3219,14 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _C.brand.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                          color: _C.brand.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20)),
                       child: Text(
                         _isIndexable ? 'Indexable' : 'Solid Carbide',
                         style: TextStyle(
-                          color: _C.brand,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
+                            color: _C.brand,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -3633,8 +3242,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                 backgroundColor: _C.brand.withOpacity(0.06),
                 side: const BorderSide(color: _C.brand, width: 1.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 textStyle:
                     const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
@@ -3652,15 +3260,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
 
   Widget _sectionLabel(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 10, left: 2),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: _C.textMuted,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
+        child: Text(text,
+            style: const TextStyle(
+                color: _C.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2)),
       );
 
   Widget _card({required Widget child}) {
@@ -3675,17 +3280,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
   }
 
-  // Tab-bar style Metric/Imperial switch — solid accent background,
-  // white text for both, with a thin white underline that slides to
-  // whichever side is selected (matches the Drilling/Turning tabs
-  // in the reference).
   Widget _unitsSlider() {
     return Container(
       height: 38,
       decoration: BoxDecoration(
-        color: _accent,
-        borderRadius: BorderRadius.circular(10),
-      ),
+          color: _accent, borderRadius: BorderRadius.circular(10)),
       clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -3704,12 +3303,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                         child: Text(
                           'Metric',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: _units == Units.metric
-                                ? FontWeight.w800
-                                : FontWeight.w500,
-                            fontSize: 12.5,
-                          ),
+                              color: Colors.white,
+                              fontWeight: _units == Units.metric
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
+                              fontSize: 12.5),
                         ),
                       ),
                     ),
@@ -3719,10 +3317,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                       onTap: () {
                         setState(() {
                           _units = Units.imperial;
-                          // Form (Roll) Tap is metric-only (see the
-                          // Tapping field grid) — reset back to Cut Tap
-                          // so an imperial size never gets left showing
-                          // a roll-tap result it can't offer data for.
                           _isFormTap = false;
                         });
                         _recalculate();
@@ -3731,12 +3325,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                         child: Text(
                           'Imperial',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: _units == Units.imperial
-                                ? FontWeight.w800
-                                : FontWeight.w500,
-                            fontSize: 12.5,
-                          ),
+                              color: Colors.white,
+                              fontWeight: _units == Units.imperial
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
+                              fontSize: 12.5),
                         ),
                       ),
                     ),
@@ -3750,10 +3343,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                     ? Alignment.bottomLeft
                     : Alignment.bottomRight,
                 child: Container(
-                  width: segmentWidth,
-                  height: 2.5,
-                  color: Colors.white,
-                ),
+                    width: segmentWidth, height: 2.5, color: Colors.white),
               ),
             ],
           );
@@ -3780,16 +3370,14 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: selected ? Colors.white : _C.textMuted,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-          ),
+              color: selected ? Colors.white : _C.textMuted,
+              fontWeight: FontWeight.w600,
+              fontSize: 13),
         ),
       ),
     );
   }
 
-  // ---- material picker: opens a grouped list in a bottom sheet ----
   Widget _materialPicker() {
     return InkWell(
       borderRadius: BorderRadius.circular(10),
@@ -3797,10 +3385,9 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: _C.card,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: _C.border),
-        ),
+            color: _C.card,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _C.border)),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -3811,45 +3398,37 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                 alignment: Alignment.center,
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
-                  color: materialBadgeColor(_material!.group),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _material!.group[0],
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 13),
-                ),
+                    color: materialBadgeColor(_material!.group),
+                    borderRadius: BorderRadius.circular(8)),
+                child: Text(_material!.group[0],
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 13)),
               ),
             Expanded(
               child: _material == null
-                  ? const Text(
-                      'Select material for force, torque & power',
+                  ? const Text('Select material for force, torque & power',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: _C.textMuted,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500),
-                    )
+                          fontWeight: FontWeight.w500))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          _materialDisplayName ?? _material!.description,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: _C.textDark,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700),
-                        ),
+                        Text(_materialDisplayName ?? _material!.description,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: _C.textDark,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700)),
                         if (_material!.rmMax > 0)
                           Text(
-                            'Rm ${_material!.rmMin.toInt()}–${_material!.rmMax.toInt()} N/mm²',
-                            style: const TextStyle(
-                                color: _C.textMuted, fontSize: 10),
-                          ),
+                              'Rm ${_material!.rmMin.toInt()}–${_material!.rmMax.toInt()} N/mm²',
+                              style: const TextStyle(
+                                  color: _C.textMuted, fontSize: 10)),
                       ],
                     ),
             ),
@@ -3863,9 +3442,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   _recalculate();
                 },
                 child: const Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Icon(Icons.close, size: 16, color: _C.textMuted),
-                ),
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close, size: 16, color: _C.textMuted)),
               )
             else
               const Icon(Icons.chevron_right, size: 20, color: _C.textMuted),
@@ -3882,8 +3460,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       backgroundColor: _C.bg,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setModalState) {
@@ -3911,13 +3488,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Select material',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: _C.textDark),
-                          ),
+                          const Text('Select material',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: _C.textDark)),
                           const SizedBox(height: 10),
                           TextField(
                             controller: searchCtrl,
@@ -3935,21 +3510,18 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 0, horizontal: 12),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide.none,
-                              ),
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none),
                             ),
                           ),
                           if (!searching) ...[
                             const SizedBox(height: 10),
-                            const Text(
-                              'OR BROWSE BY GENERIC GROUP',
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  color: _C.textMuted,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1),
-                            ),
+                            const Text('OR BROWSE BY GENERIC GROUP',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: _C.textMuted,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1)),
                           ],
                         ],
                       ),
@@ -3969,14 +3541,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
   }
 
-  // Specific named alloys (from the linked CSV), filtered by search.
   Widget _namedMaterialList(BuildContext ctx, List<NamedMaterial> results) {
     if (results.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.all(20),
-        child: Text('No matching alloy found.',
-            style: TextStyle(color: _C.textMuted, fontSize: 13)),
-      );
+          padding: EdgeInsets.all(20),
+          child: Text('No matching alloy found.',
+              style: TextStyle(color: _C.textMuted, fontSize: 13)));
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -3992,9 +3562,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
             height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: materialBadgeColor(nm.walterGroup),
-              borderRadius: BorderRadius.circular(7),
-            ),
+                color: materialBadgeColor(nm.walterGroup),
+                borderRadius: BorderRadius.circular(7)),
             child: Text(nm.walterGroup.isNotEmpty ? nm.walterGroup[0] : '?',
                 style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
@@ -4024,7 +3593,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
   }
 
-  // The 33 generic Walter machining groups, browsable directly.
   Widget _genericGroupList(BuildContext ctx) {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -4039,9 +3607,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
             height: 32,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: materialBadgeColor(m.group),
-              borderRadius: BorderRadius.circular(7),
-            ),
+                color: materialBadgeColor(m.group),
+                borderRadius: BorderRadius.circular(7)),
             child: Text(m.group[0],
                 style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
@@ -4075,16 +3642,13 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            displayLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: _C.textMuted,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(displayLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: _C.textMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -4096,40 +3660,35 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   style: TextStyle(
-                    color: computed ? _accent : _C.textDark,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
+                      color: computed ? _accent : _C.textDark,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700),
                   decoration: InputDecoration(
                     isDense: true,
                     filled: false,
                     contentPadding: const EdgeInsets.only(bottom: 6),
-                    border: UnderlineInputBorder(
+                    border: const UnderlineInputBorder(
                         borderSide: BorderSide(color: _C.border)),
-                    enabledBorder: UnderlineInputBorder(
+                    enabledBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: _C.border)),
                     focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: _accent, width: 1.5)),
                     hintText: '0',
                     hintStyle: TextStyle(
-                      color: _C.textMuted.withOpacity(0.35),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
+                        color: _C.textMuted.withOpacity(0.35),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
               if (unit.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(left: 6, bottom: 8),
-                  child: Text(
-                    unit,
-                    style: const TextStyle(
-                      color: _C.textMuted,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: Text(unit,
+                      style: const TextStyle(
+                          color: _C.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500)),
                 ),
             ],
           ),
@@ -4138,9 +3697,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
   }
 
-  // Arranges parameter fields into 2-per-row pairs — matching the
-  // Diameter/Cutting-speed style table pairing from the reference —
-  // instead of a boxed grid.
   Widget _fieldGrid(List<Widget> fields) {
     const gap = 14.0;
     final rows = <Widget>[];
@@ -4182,11 +3738,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               computed: !_feedRateIsDriving,
               focusNode: _feedRateFocusNode),
           _field(_depthCtrl, 'Depth', uDepth, symbol: 'ap'),
-          _field(_lengthCtrl, 'Length (opt)', uLength),
-          _field(_passesCtrl, 'No. of Passes', 'passes', symbol: 'Qty'),
+          _field(_lengthCtrl, 'Cut length (opt)', uLength),
+          _field(_passesCtrl, 'Passes', 'qty'),
           _field(_toolPriceCtrl, 'Tool Price', ''),
           _field(_toolLifeCtrl, 'Avg. Life/Edge', 'pcs', symbol: 'N'),
-          _field(_edgesCtrl, 'Cutting Edges', 'edges', symbol: 'Ce'),
+          _field(_edgesCtrl, 'Edges', 'qty', symbol: 'Ce'),
         ]);
       case Operation.drilling:
         return _fieldGrid([
@@ -4208,7 +3764,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               computed: !_feedRateIsDriving,
               focusNode: _feedRateFocusNode),
           _field(_lengthCtrl, 'Depth (opt)', uLength),
-          _field(_holesCtrl, 'No. of Holes', 'holes', symbol: 'Qty'),
+          _field(_holesCtrl, 'Holes', 'qty'),
         ]);
       case Operation.milling:
         return _fieldGrid([
@@ -4232,19 +3788,15 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           _field(_depthCtrl, 'Depth', uDepth, symbol: 'ap'),
           _field(_widthCtrl, 'Width', uDepth, symbol: 'ae'),
           _field(_lengthCtrl, 'Length (opt)', uLength),
-          _field(_passesCtrl, 'No. of Passes', 'passes', symbol: 'Qty'),
+          _field(_passesCtrl, 'Passes', 'qty'),
           if (_isIndexable) ...[
             _field(_toolPriceCtrl, 'Tool Price', ''),
             _field(_toolLifeCtrl, 'Avg. Life/Edge', 'pcs', symbol: 'N'),
-            _field(_edgesCtrl, 'Cutting Edges', 'edges', symbol: 'Ce'),
+            _field(_edgesCtrl, 'Edges', 'qty', symbol: 'Ce'),
           ],
         ]);
       case Operation.tapping:
         return Column(children: [
-          // Form (Roll) Tap is metric-only — the published imperial
-          // drill-size charts (BSW/BSP/BSPT/UNC/UNF/STI/NPT) are all
-          // Cut Tap figures, so there's no verified roll-tap data to
-          // offer for imperial sizes.
           if (_units == Units.metric) ...[
             _tapTypeRow(),
             const SizedBox(height: 12),
@@ -4264,8 +3816,8 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               _field(_feedRateCtrl, 'Feed rate', uFeedRate,
                   symbol: 'Vf', computed: true),
               _field(_lengthCtrl, 'Depth (opt)', uLength),
-              _field(_holesCtrl, 'No. of Holes', 'holes', symbol: 'Qty'),
-              _field(_teethCtrl, 'No. of Flutes (opt)', 'flutes', symbol: 'z'),
+              _field(_holesCtrl, 'Holes', 'qty'),
+              _field(_teethCtrl, 'Flutes (opt)', 'qty', symbol: 'z'),
             ]),
           ] else ...[
             _threadStandardRow(),
@@ -4284,28 +3836,23 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               _field(_feedRateCtrl, 'Feed rate', uFeedRate,
                   symbol: 'Vf', computed: true),
               _field(_lengthCtrl, 'Depth (opt)', uLength),
-              _field(_holesCtrl, 'No. of Holes', 'holes', symbol: 'Qty'),
-              _field(_teethCtrl, 'No. of Flutes (opt)', 'flutes', symbol: 'z'),
+              _field(_holesCtrl, 'Holes', 'qty'),
+              _field(_teethCtrl, 'Flutes (opt)', 'qty', symbol: 'z'),
             ]),
           ],
           if (_units == Units.imperial && _threadStandard == 'NPT')
             const Padding(
               padding: EdgeInsets.only(top: 4, bottom: 4),
               child: Text(
-                'NPT is a tapered thread — its true tap drill size is normally '
-                'read from a manufacturer chart. This uses the same '
-                'diameter-minus-pitch rule as the other standards, off NPT\'s '
-                'standard nominal pipe OD, as an approximation.',
+                'Note: NPT is tapered. Tap drill size is computed via standard D-pitch approximation.',
                 style:
                     TextStyle(color: _C.textMuted, fontSize: 11, height: 1.3),
               ),
             ),
           const Padding(
             padding: EdgeInsets.only(top: 4),
-            child: Text(
-              'Drill size is always shown in mm, regardless of this toggle.',
-              style: TextStyle(color: _C.textMuted, fontSize: 11),
-            ),
+            child: Text('Drill size is shown in mm regardless of unit toggle.',
+                style: TextStyle(color: _C.textMuted, fontSize: 11)),
           ),
         ]);
     }
@@ -4326,17 +3873,13 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: selected ? _C.brand : _C.cardAlt,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              form,
-              style: TextStyle(
-                color: selected ? Colors.white : _C.textDark,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
+                color: selected ? _C.brand : _C.cardAlt,
+                borderRadius: BorderRadius.circular(8)),
+            child: Text(form,
+                style: TextStyle(
+                    color: selected ? Colors.white : _C.textDark,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
           ),
         );
       }).toList(),
@@ -4347,26 +3890,22 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     return Row(
       children: [
         Expanded(
-          child: _toggleButton(
-            label: 'Cut Tap',
-            selected: !_isFormTap,
-            onTap: () {
-              setState(() => _isFormTap = false);
-              _recalculate();
-            },
-          ),
-        ),
+            child: _toggleButton(
+                label: 'Cut Tap',
+                selected: !_isFormTap,
+                onTap: () {
+                  setState(() => _isFormTap = false);
+                  _recalculate();
+                })),
         const SizedBox(width: 10),
         Expanded(
-          child: _toggleButton(
-            label: 'Form (Roll) Tap',
-            selected: _isFormTap,
-            onTap: () {
-              setState(() => _isFormTap = true);
-              _recalculate();
-            },
-          ),
-        ),
+            child: _toggleButton(
+                label: 'Form (Roll) Tap',
+                selected: _isFormTap,
+                onTap: () {
+                  setState(() => _isFormTap = true);
+                  _recalculate();
+                })),
       ],
     );
   }
@@ -4389,25 +3928,19 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: selected ? _C.brand : _C.cardAlt,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              std,
-              style: TextStyle(
-                color: selected ? Colors.white : _C.textDark,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
+                color: selected ? _C.brand : _C.cardAlt,
+                borderRadius: BorderRadius.circular(8)),
+            child: Text(std,
+                style: TextStyle(
+                    color: selected ? Colors.white : _C.textDark,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
           ),
         );
       }).toList(),
     );
   }
 
-  // Whole TPI values show clean ("20"); fractional ones (NPT's 11.5)
-  // keep one decimal place.
   String _fmtTpi(double tpi) {
     return tpi == tpi.roundToDouble()
         ? tpi.toStringAsFixed(0)
@@ -4421,26 +3954,22 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: _C.cardAlt,
-          borderRadius: BorderRadius.circular(10),
-        ),
+            color: _C.cardAlt, borderRadius: BorderRadius.circular(10)),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 _selectedThreadSize == null
                     ? 'Select $_threadStandard size'
-                    : '$_threadStandard ${_selectedThreadSize!.label}  ·  '
-                        '${_selectedThreadSize!.diameterMm.toStringAsFixed(2)} mm dia  ·  '
-                        '${_fmtTpi(_selectedThreadSize!.tpi)} TPI',
+                    : '$_threadStandard ${_selectedThreadSize!.label}  ·  ${_selectedThreadSize!.diameterMm.toStringAsFixed(2)} mm dia  ·  ${_fmtTpi(_selectedThreadSize!.tpi)} TPI',
                 style: TextStyle(
-                  color:
-                      _selectedThreadSize == null ? _C.textMuted : _C.textDark,
-                  fontSize: 13,
-                  fontWeight: _selectedThreadSize == null
-                      ? FontWeight.w500
-                      : FontWeight.w600,
-                ),
+                    color: _selectedThreadSize == null
+                        ? _C.textMuted
+                        : _C.textDark,
+                    fontSize: 13,
+                    fontWeight: _selectedThreadSize == null
+                        ? FontWeight.w500
+                        : FontWeight.w600),
               ),
             ),
             const Icon(Icons.chevron_right, color: _C.textMuted),
@@ -4456,8 +3985,7 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       context: context,
       backgroundColor: _C.bg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return SafeArea(
           child: SizedBox(
@@ -4468,13 +3996,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      '$_threadStandard sizes',
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: _C.textDark),
-                    ),
+                    child: Text('$_threadStandard sizes',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: _C.textDark)),
                   ),
                 ),
                 Expanded(
@@ -4491,17 +4017,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                         subtitle: Text(
-                          '${s.diameterMm.toStringAsFixed(2)} mm dia  ·  '
-                          '${_fmtTpi(s.tpi)} TPI',
-                          style: const TextStyle(
-                              fontSize: 12, color: _C.textMuted),
-                        ),
+                            '${s.diameterMm.toStringAsFixed(2)} mm dia  ·  ${_fmtTpi(s.tpi)} TPI',
+                            style: const TextStyle(
+                                fontSize: 12, color: _C.textMuted)),
                         onTap: () {
                           setState(() {
                             _selectedThreadSize = s;
-                            // Fields are populated in inches — this picker only
-                            // shows when Units is Imperial, and the RPM/feed
-                            // formulas for that mode expect inch inputs.
                             _diameterCtrl.text =
                                 (s.diameterMm / 25.4).toStringAsFixed(4);
                             _feedCtrl.text =
@@ -4547,17 +4068,15 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
       padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_accent, const Color(0xFFA80E18)],
-        ),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_accent, const Color(0xFFA80E18)]),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: _accent.withOpacity(0.3),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
+              color: _accent.withOpacity(0.3),
+              blurRadius: 14,
+              offset: const Offset(0, 6))
         ],
       ),
       child: Column(
@@ -4570,15 +4089,12 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                 children: [
                   Icon(Icons.bar_chart_rounded, color: Colors.white, size: 18),
                   SizedBox(width: 6),
-                  Text(
-                    'RESULTS',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
-                    ),
-                  ),
+                  Text('RESULTS',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6)),
                 ],
               ),
               if (hasMaterialStats)
@@ -4589,10 +4105,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
-                      _resultsExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                        _resultsExpanded
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                        color: Colors.white,
+                        size: 20),
                   ),
                 ),
             ],
@@ -4601,33 +4118,26 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
           ..._gradientStatRows(primary),
           if (hasMaterialStats && _resultsExpanded) ...[
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(color: Colors.white24, height: 1),
-            ),
-            Text(
-              'MATERIAL — ${_material!.description}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(color: Colors.white24, height: 1)),
+            Text('MATERIAL — ${_material!.description}',
+                style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1)),
             const SizedBox(height: 8),
             ..._gradientStatRows(materialStats),
             const Padding(
               padding: EdgeInsets.only(top: 4),
-              child: Text(
-                'Assumes 90° entry angle and 80% machine efficiency.',
-                style: TextStyle(color: Colors.white70, fontSize: 10),
-              ),
+              child: Text('Assumes 90° entry angle and 80% machine efficiency.',
+                  style: TextStyle(color: Colors.white70, fontSize: 10)),
             ),
           ],
           if (chartable.isNotEmpty) ...[
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-              child: Divider(color: Colors.white24, height: 1),
-            ),
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(color: Colors.white24, height: 1)),
             _inAppBarChart(chartable),
           ],
         ],
@@ -4635,8 +4145,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     );
   }
 
-  // Lays result stats out 2-per-row, matching the reference panel's
-  // paired grid (Metal removal rate / Cut time, Torque / Power).
   List<Widget> _gradientStatRows(List<(String, double, String)> stats) {
     final rows = <Widget>[];
     for (int i = 0; i < stats.length; i += 2) {
@@ -4661,10 +4169,6 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     return rows;
   }
 
-  // A simple bar chart shown right in the results panel — each bar's
-  // height is scaled to that stat's own value relative to the
-  // largest value in the set, with the number and unit labeled so it
-  // stays meaningful even though the metrics use different units.
   Widget _inAppBarChart(List<(String, double, String)> stats) {
     const maxBarHeight = 70.0;
     final maxVal = stats.map((s) => s.$2).reduce((a, b) => a > b ? a : b);
@@ -4680,13 +4184,11 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    stats[i].$2.toStringAsFixed(1),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800),
-                  ),
+                  Text(stats[i].$2.toStringAsFixed(1),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
                   Container(
                     height: maxVal > 0
@@ -4695,26 +4197,22 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        topRight: Radius.circular(4),
-                      ),
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4)),
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    stats[i].$1,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    stats[i].$3,
-                    style: const TextStyle(color: Colors.white54, fontSize: 8),
-                  ),
+                  Text(stats[i].$1,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600)),
+                  Text(stats[i].$3,
+                      style:
+                          const TextStyle(color: Colors.white54, fontSize: 8)),
                 ],
               ),
             ),
@@ -4729,31 +4227,25 @@ class _CalculatorDetailScreenState extends State<CalculatorDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-              color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
-        ),
+        Text(label,
+            style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 3),
         Text(
-          unit.isEmpty
-              ? value.toStringAsFixed(2)
-              : '${value.toStringAsFixed(2)} $unit',
-          style: const TextStyle(
-              color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800),
-        ),
+            unit.isEmpty
+                ? value.toStringAsFixed(2)
+                : '${value.toStringAsFixed(2)} $unit',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w800)),
       ],
     );
   }
 }
 
-// ============================================================
-// MATERIAL REFERENCE SCREEN
-// A checkable data sheet: every alloy from the linked CSV, its
-// resolved Walter machining group, and that group's specific
-// cutting force (kc1.1) and exponent (mc) — so the numbers the
-// calculator uses aren't a black box.
-// ============================================================
 class MaterialReferenceScreen extends StatefulWidget {
   const MaterialReferenceScreen({super.key});
 
@@ -4774,15 +4266,11 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
   Widget _hardnessPill(String text, Color bg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-            fontSize: 11, fontWeight: FontWeight.w800, color: _C.textDark),
-      ),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+      child: Text(text,
+          style: const TextStyle(
+              fontSize: 11, fontWeight: FontWeight.w800, color: _C.textDark)),
     );
   }
 
@@ -4833,9 +4321,8 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                     contentPadding:
                         const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -4849,8 +4336,7 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                 ? const Padding(
                     padding: EdgeInsets.all(20),
                     child: Text('No matches.',
-                        style: TextStyle(color: _C.textMuted, fontSize: 13)),
-                  )
+                        style: TextStyle(color: _C.textMuted, fontSize: 13)))
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                     itemCount: rows.length,
@@ -4870,16 +4356,15 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                               margin: const EdgeInsets.only(top: 2, right: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: materialBadgeColor(nm.walterGroup),
-                                borderRadius: BorderRadius.circular(7),
-                              ),
+                                  color: materialBadgeColor(nm.walterGroup),
+                                  borderRadius: BorderRadius.circular(7)),
                               child: Text(
-                                nm.walterGroup.isNotEmpty
-                                    ? nm.walterGroup[0]
-                                    : '?',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w800, fontSize: 12),
-                              ),
+                                  nm.walterGroup.isNotEmpty
+                                      ? nm.walterGroup[0]
+                                      : '?',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12)),
                             ),
                             Expanded(
                               child: Column(
@@ -4909,11 +4394,9 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                                         ],
                                       ),
                                     ),
-                                  Text(
-                                    nm.subGroup,
-                                    style: const TextStyle(
-                                        fontSize: 11, color: _C.textMuted),
-                                  ),
+                                  Text(nm.subGroup,
+                                      style: const TextStyle(
+                                          fontSize: 11, color: _C.textMuted)),
                                   if (nm.sae.isNotEmpty ||
                                       nm.din.isNotEmpty ||
                                       nm.en.isNotEmpty)
@@ -4925,7 +4408,7 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                                             'SAE ${nm.sae}',
                                           if (nm.din.isNotEmpty)
                                             'DIN ${nm.din}',
-                                          if (nm.en.isNotEmpty) nm.en,
+                                          if (nm.en.isNotEmpty) nm.en
                                         ].join('  ·  '),
                                         style: const TextStyle(
                                             fontSize: 11, color: _C.textMuted),
@@ -4935,10 +4418,10 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 2),
                                       child: Text(
-                                        'Machinability ${nm.machinability}',
-                                        style: const TextStyle(
-                                            fontSize: 11, color: _C.textMuted),
-                                      ),
+                                          'Machinability ${nm.machinability}',
+                                          style: const TextStyle(
+                                              fontSize: 11,
+                                              color: _C.textMuted)),
                                     ),
                                 ],
                               ),
@@ -4974,9 +4457,6 @@ class _MaterialReferenceScreenState extends State<MaterialReferenceScreen> {
   }
 }
 
-// ============================================================
-// TOLERANCE SCREEN — ISO hole & shaft fit calculator
-// ============================================================
 class ToleranceScreen extends StatefulWidget {
   const ToleranceScreen({super.key});
 
@@ -4991,17 +4471,10 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
   int _shaftGrade = 6;
   String _shaftLetter = 'g';
 
-  // Which side (Hole or Shaft) the wheel pickers and big readout
-  // are currently showing/editing — switched via the bottom tabs.
   bool _showingHole = true;
 
   static const List<int> _grades = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
-  // Picker scroll controllers are created ONCE and reused — never
-  // rebuilt inline during build(). Recreating a FixedExtentScrollController
-  // on every keystroke (which happened when this screen rebuilt on
-  // every character typed into Nominal Size) fights with the picker's
-  // internal state and was freezing the on-screen text input.
   late final FixedExtentScrollController _holeLetterCtrl;
   late final FixedExtentScrollController _holeGradeCtrl;
   late final FixedExtentScrollController _shaftLetterCtrl;
@@ -5018,9 +4491,6 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
         initialItem: kShaftLetters.indexOf(_shaftLetter));
     _shaftGradeCtrl =
         FixedExtentScrollController(initialItem: _grades.indexOf(_shaftGrade));
-    // Only the live number readout + fit card need to react to typing —
-    // AnimatedBuilder below scopes the rebuild to just that subtree,
-    // so the TextField and pickers are never torn down mid-keystroke.
   }
 
   @override
@@ -5057,7 +4527,6 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
       ),
       body: Column(
         children: [
-          // ---- big readout banner (rebuilds live as you type) ----
           AnimatedBuilder(
             animation: _sizeCtrl,
             builder: (context, _) {
@@ -5080,15 +4549,12 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          D != null ? _trimZero(D) : '—',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 64,
-                            fontWeight: FontWeight.w800,
-                            height: 1,
-                          ),
-                        ),
+                        Text(D != null ? _trimZero(D) : '—',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 64,
+                                fontWeight: FontWeight.w800,
+                                height: 1)),
                         const SizedBox(width: 8),
                         if (dev != null)
                           Padding(
@@ -5116,9 +4582,8 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8)),
                           child: Text('$letter$grade',
                               style: const TextStyle(
                                   color: Colors.white,
@@ -5154,15 +4619,13 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide:
-                                    const BorderSide(color: Colors.white54),
-                              ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      const BorderSide(color: Colors.white54)),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(
-                                    color: Colors.white, width: 1.5),
-                              ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                      color: Colors.white, width: 1.5)),
                             ),
                           ),
                         ),
@@ -5173,7 +4636,6 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
               );
             },
           ),
-          // ---- fit summary + wheel pickers (scrollable if needed) ----
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -5241,10 +4703,7 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     child: Text(
-                      'Shaft fundamental deviations (c/d/e/f/g/k/n/p/s/u) are standard '
-                      'reference figures for common preferred fits. Hole letters are '
-                      'mirrored from the same table (exact through grade IT8). Verify '
-                      'against ISO 286-2 before using for production tolerancing.',
+                      'Deviations follow ISO 286-2 for standard preferred fits. Verify prior to production tolerancing.',
                       style: TextStyle(
                           color: _C.textMuted, fontSize: 10, height: 1.3),
                     ),
@@ -5253,7 +4712,6 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
               ),
             ),
           ),
-          // ---- Hole / Shaft tabs ----
           Row(
             children: [
               Expanded(
@@ -5274,16 +4732,15 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
       return 'Clearance fit';
     if (['k', 'n'].contains(_shaftLetter)) return 'Transition fit';
     if (['p', 's', 'u'].contains(_shaftLetter)) return 'Interference fit';
-    return 'Reference fit'; // h or js
+    return 'Reference fit';
   }
 
   Widget _fitCard(double maxClearance, double minClearance) {
     return Container(
       decoration: BoxDecoration(
-        color: _C.brand.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _C.brand.withOpacity(0.25)),
-      ),
+          color: _C.brand.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _C.brand.withOpacity(0.25))),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
         children: [
@@ -5338,43 +4795,38 @@ class _ToleranceScreenState extends State<ToleranceScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 18),
         color: selected ? _C.brand : const Color(0xFF3A3D44),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-        ),
+        child: Text(label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700)),
       ),
     );
   }
 
-  Widget _wheel({
-    required FixedExtentScrollController controller,
-    required List<String> items,
-    required ValueChanged<int> onChanged,
-  }) {
+  Widget _wheel(
+      {required FixedExtentScrollController controller,
+      required List<String> items,
+      required ValueChanged<int> onChanged}) {
     return CupertinoPicker(
       itemExtent: 46,
       scrollController: controller,
       onSelectedItemChanged: onChanged,
       selectionOverlay: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: _C.brand, width: 1.5),
-          color: _C.brand.withOpacity(0.06),
-        ),
-      ),
+          decoration: BoxDecoration(
+              border: Border.all(color: _C.brand, width: 1.5),
+              color: _C.brand.withOpacity(0.06))),
       children: [
         for (int i = 0; i < items.length; i++)
           Container(
             color: i.isEven ? _C.card : _C.cardAlt,
             alignment: Alignment.center,
-            child: Text(
-              items[i],
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: _C.textDark),
-            ),
+            child: Text(items[i],
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _C.textDark)),
           ),
       ],
     );
